@@ -1,0 +1,360 @@
+﻿name: Build and Package StarMade Launcher
+
+on:
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+env:
+    # TODO: These should be hosted on Schine's AWS or something
+    JAVA8_WINDOWS_URL: https://www.dropbox.com/scl/fi/kmnl9nmzbsnvi9wv6tcil/jre8_windows.zip?rlkey=ep53r4x98ghgj6wmrpoe7luzy&st=xmi237zf&dl=1
+    JAVA8_MACOS_URL: https://www.dropbox.com/scl/fi/zb2wcxhedw3wko7tll6oa/jre8_macos.zip?rlkey=093x9jz0gf6v2wx3mzc8c8hwf&st=64zqvj13&dl=1
+    JAVA8_LINUX_URL: https://www.dropbox.com/scl/fi/aw1ev6u0t2x4rw9nsb6c5/jre8_linux.zip?rlkey=2zzt7d0c7dzv8oebfh7j1ahh3&st=5kvlbbzd&dl=1
+    
+    JAVA23_WINDOWS_URL: https://www.dropbox.com/scl/fi/80ja48hi5bormy3p3932j/jre23_windows.zip?rlkey=fgd4pxmdfyi8au8u66836wuiw&st=kauuxoja&dl=1
+    JAVA23_MACOS_URL: https://www.dropbox.com/scl/fi/2wchobox6z4zsg9z94cfy/jre23_macos.zip?rlkey=6f967f3ygdw66yjuqf77oders&st=tafkbqod&dl=1
+    JAVA23_LINUX_URL: https://www.dropbox.com/scl/fi/jfg36bpve42qf0i4451a0/jre23_linux.zip?rlkey=t35fjcwfq24xecn1aexkmg6z3&st=q41jv8yi&dl=1
+
+jobs:
+    build-jar:
+        name: Build Jar
+        runs-on: ubuntu-latest
+        
+        steps:
+            -   uses: actions/checkout@v3
+            
+            -   name: Set up JDK 23
+                uses: actions/setup-java@v3
+                with:
+                    java-version: '23'
+                    distribution: 'temurin'
+            
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            
+            -   name: Get Project Version
+                id: get_version
+                run: |
+                    VERSION=$(./gradlew properties -q | grep "version:" | awk '{print $2}')
+                    echo "PROJECT_VERSION=$VERSION" >> $GITHUB_OUTPUT
+            
+            -   name: Build with Gradle
+                run: ./gradlew jar
+            
+            -   name: Upload JAR
+                uses: actions/upload-artifact@v4
+                with:
+                    name: starmade-launcher-jar
+                    path: build/libs/StarMade-Launcher.jar
+        
+        outputs:
+            project_version: ${{ steps.get_version.outputs.PROJECT_VERSION }}
+    
+    package-windows:
+        name: Package for Windows
+        needs: build-jar
+        runs-on: windows-latest
+        
+        steps:
+            -   uses: actions/checkout@v3
+            
+            -   name: Download JAR
+                uses: actions/download-artifact@v4
+                with:
+                    name: starmade-launcher-jar
+                    path: native-packages/windows/
+            
+            -   name: Download Java 8 Runtime
+                run: |
+                    mkdir -p native-packages/windows/jre8
+                    curl -L "${{ env.JAVA8_WINDOWS_URL }}" -o java8.zip
+                    unzip java8.zip -d native-packages/windows/jre8
+            
+            -   name: Download Java 23 Runtime
+                run: |
+                    mkdir -p native-packages/windows/jre23
+                    curl -L "${{ env.JAVA23_WINDOWS_URL }}" -o java23.zip
+                    unzip java23.zip -d native-packages/windows/jre23
+            
+            -   name: Setup MinGW
+                uses: msys2/setup-msys2@v2
+                with:
+                    msystem: mingw64
+                    update: true
+                    install: mingw-w64-x86_64-gcc
+            
+            -   name: Create native folder
+                shell: pwsh
+                run: |
+                    New-Item -Path "src/main/native" -ItemType Directory -Force
+            
+            -   name: Copy unified launcher code
+                shell: pwsh
+                run: |
+                    Copy-Item "src/main/c/starmade_launcher.c" -Destination "src/main/native/starmade_launcher.c"
+            
+            -   name: Compile Windows launcher
+                shell: msys2 {0}
+                run: |
+                    cd src/main/native
+                    gcc -o StarMade-Launcher.exe starmade_launcher.c -mwindows -lshlwapi
+            
+            -   name: Set icon with Resource Hacker
+                shell: pwsh
+                run: |
+                    curl -L -o reshacker.zip http://www.angusj.com/resourcehacker/resource_hacker.zip
+                    Expand-Archive -Path reshacker.zip -DestinationPath reshacker
+                    .\reshacker\ResourceHacker.exe -open src\main\native\StarMade-Launcher.exe -save src\main\native\StarMade-Launcher.exe -action addoverwrite -res src\main\resources\starmade.ico -mask ICONGROUP,MAINICON,
+            
+            -   name: Package Windows distribution
+                run: |
+                    mkdir -p native-packages/windows/package
+                    copy src\main\native\StarMade-Launcher.exe native-packages\windows\package\
+                    copy native-packages\windows\StarMade-Launcher.jar native-packages\windows\package\
+                    copy StarMade-dedicated-server-windows.bat native-packages\windows\package\
+            
+            -   name: Package Windows distribution
+                run: |
+                    mkdir -p native-packages/windows/package
+                    copy src\main\native\StarMade-Launcher.exe native-packages\windows\package\
+                    copy native-packages\windows\StarMade-Launcher.jar native-packages\windows\package\
+                    copy StarMade-dedicated-server-windows.bat native-packages\windows\package\
+                    
+                    -   name: Create ZIP archive
+                        run: |
+                            cd native-packages/windows/package
+                            7z a ../StarMade-Launcher-Windows.zip *
+    
+    package-macos:
+        name: Package for MacOS
+        needs: build-jar
+        runs-on: macos-latest
+        
+        steps:
+            -   uses: actions/checkout@v3
+            
+            -   name: Download JAR
+                uses: actions/download-artifact@v4
+                with:
+                    name: starmade-launcher-jar
+                    path: native-packages/macos/StarMade-Launcher.app/Contents/Resources/
+            
+            -   name: Download Java 8 Runtime
+                run: |
+                    mkdir -p native-packages/macos/jre8
+                    curl -L "${{ env.JAVA8_MACOS_URL }}" -o java8.tar.gz
+                    tar -xzf java8.tar.gz -C native-packages/macos/jre8
+            
+            -   name: Download Java 23 Runtime
+                run: |
+                    mkdir -p native-packages/macos/jre23
+                    curl -L "${{ env.JAVA23_MACOS_URL }}" -o java23.tar.gz
+                    tar -xzf java23.tar.gz -C native-packages/macos/jre23
+            
+            -   name: Create app bundle structure
+                run: |
+                    mkdir -p "native-packages/macos/StarMade-Launcher.app/Contents/MacOS"
+                    mkdir -p "native-packages/macos/StarMade-Launcher.app/Contents/Resources"
+            
+            -   name: Create native folder
+                run: mkdir -p src/main/native
+            
+            -   name: Copy unified launcher code
+                run: |
+                    mkdir -p src/main/native
+                    cp src/main/c/starmade_launcher.c src/main/native/starmade_launcher.c
+            
+            -   name: Compile macOS launcher
+                run: |
+                    cd src/main/native
+                    gcc -o StarMade-Launcher starmade_launcher.c -framework CoreFoundation
+            
+            -   name: Create Info.plist
+                run: |
+                    cat > "native-packages/macos/StarMade-Launcher.app/Contents/Info.plist" << EOF
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+                    <plist version="1.0">
+                    <dict>
+                        <key>CFBundleExecutable</key>
+                        <string>StarMade-Launcher</string>
+                        <key>CFBundleIconFile</key>
+                        <string>AppIcon</string>
+                        <key>CFBundleIdentifier</key>
+                        <string>org.starmade.launcher</string>
+                        <key>CFBundleInfoDictionaryVersion</key>
+                        <string>6.0</string>
+                        <key>CFBundleName</key>
+                        <string>StarMade Launcher</string>
+                        <key>CFBundlePackageType</key>
+                        <string>APPL</string>
+                        <key>CFBundleShortVersionString</key>
+                        <string>${{ needs.build-jar.outputs.project_version }}</string>
+                        <key>CFBundleVersion</key>
+                        <string>${{ needs.build-jar.outputs.project_version }}</string>
+                        <key>NSHighResolutionCapable</key>
+                        <true/>
+                    </dict>
+                    </plist>
+                    EOF
+            
+            -   name: Copy native launcher
+                run: |
+                    cp src/main/native/StarMade-Launcher "native-packages/macos/StarMade-Launcher.app/Contents/MacOS/"
+                    chmod +x "native-packages/macos/StarMade-Launcher.app/Contents/MacOS/StarMade-Launcher"
+            
+            -   name: Convert icon
+                run: |
+                    cp src/main/resources/starmade.icns "native-packages/macos/StarMade-Launcher.app/Contents/Resources/AppIcon.icns"
+            
+            -   name: Copy server script
+                run: |
+                    cp StarMade-dedicated-server-macos.command native-packages/macos/
+                    chmod +x native-packages/macos/StarMade-dedicated-server-macos.command
+            
+            -   name: Create ZIP archive
+                run: |
+                    cd native-packages/macos
+                    zip -r ../StarMade-Launcher-MacOS.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command
+            
+            -   name: Upload macOS package
+                uses: actions/upload-artifact@v4
+                with:
+                    name: starmade-launcher-macos
+                    path: native-packages/StarMade-Launcher-MacOS.zip
+    
+    package-linux:
+        name: Package for Linux
+        needs: build-jar
+        runs-on: ubuntu-latest
+        
+        steps:
+            -   uses: actions/checkout@v3
+            
+            -   name: Download JAR
+                uses: actions/download-artifact@v4
+                with:
+                    name: starmade-launcher-jar
+                    path: native-packages/linux/starmade-launcher/
+            
+            -   name: Download Java 8 Runtime
+                run: |
+                    mkdir -p native-packages/linux/starmade-launcher/jre8
+                    curl -L "${{ env.JAVA8_LINUX_URL }}" -o java8.tar.gz
+                    tar -xzf java8.tar.gz -d native-packages/linux/starmade-launcher/jre8
+            
+            -   name: Download Java 23 Runtime
+                run: |
+                    mkdir -p native-packages/linux/starmade-launcher/jre23
+                    curl -L "${{ env.JAVA23_LINUX_URL }}" -o java23.tar.gz
+                    tar -xzf java23.tar.gz -d native-packages/linux/starmade-launcher/jre23
+            
+            -   name: Create directory structure
+                run: |
+                    mkdir -p native-packages/linux/starmade-launcher
+            
+            -   name: Create native folder
+                run: mkdir -p src/main/native
+            
+            -   name: Copy unified launcher code
+                run: |
+                    mkdir -p src/main/native
+                    cp src/main/c/starmade_launcher.c src/main/native/starmade_launcher.c
+            
+            -   name: Compile Linux launcher
+                run: |
+                    cd src/main/native
+                    gcc -o StarMade-Launcher starmade_launcher.c
+            
+            -   name: Copy native launcher
+                run: |
+                    cp src/main/native/StarMade-Launcher native-packages/linux/starmade-launcher/
+                    chmod +x native-packages/linux/starmade-launcher/StarMade-Launcher
+            
+            -   name: Copy server script
+                run: |
+                    cp StarMade-dedicated-server-linux.sh native-packages/linux/starmade-launcher/
+                    chmod +x native-packages/linux/starmade-launcher/StarMade-dedicated-server-linux.sh
+            
+            -   name: Create Desktop Entry
+                run: |
+                    mkdir -p native-packages/linux/starmade-launcher/desktop
+                    
+                    # Create desktop entry file
+                    cat > native-packages/linux/starmade-launcher/desktop/starmade-launcher.desktop << EOF
+                    [Desktop Entry]
+                    Type=Application
+                    Name=StarMade Launcher
+                    Comment=Launcher for StarMade
+                    Exec=StarMade-Launcher
+                    Icon=starmade-launcher
+                    Terminal=false
+                    Categories=Game;
+                    EOF
+                    
+                    # Copy icon
+                    mkdir -p native-packages/linux/starmade-launcher/desktop/icons
+                    cp src/main/resources/starmade.png native-packages/linux/starmade-launcher/desktop/icons/starmade-launcher.png
+            
+            -   name: Create tar.gz archive
+                run: |
+                    cd native-packages/linux
+                    tar -czf ../StarMade-Launcher-Linux.tar.gz starmade-launcher
+            
+            -   name: Upload Linux package
+                uses: actions/upload-artifact@v4
+                with:
+                    name: starmade-launcher-linux
+                    path: native-packages/StarMade-Launcher-Linux.tar.gz
+    
+    create-release:
+        name: Create Draft Release
+        needs:
+            - build-jar
+            - package-windows
+            - package-macos
+            - package-linux
+        runs-on: ubuntu-latest
+        
+        steps:
+            -   uses: actions/checkout@v3
+            
+            -   name: Download Artifacts
+                uses: actions/download-artifact@v4
+                with:
+                    path: artifacts
+                    merge-multiple: true
+            
+            -   name: Prepare Artifacts
+                run: |
+                    # Unzip any nested zips to ensure correct file structure
+                    cd artifacts
+                    for file in *.zip; do
+                      if [ -f "$file" ]; then
+                        unzip "$file"
+                        rm "$file"
+                      fi
+                    done
+                    
+                    # Unpack tar.gz files
+                    for file in *.tar.gz; do
+                      if [ -f "$file" ]; then
+                        tar -xzvf "$file"
+                        rm "$file"
+                      fi
+                    done
+                    
+                    # List final contents
+                    ls -R
+            
+            -   name: Create Draft Release
+                uses: softprops/action-gh-release@v2
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                with:
+                    draft: true
+                    tag_name: v${{ needs.build-jar.outputs.project_version }}
+                    name: StarMade Launcher v${{ needs.build-jar.outputs.project_version }}
+                    files: |
+                        artifacts/*

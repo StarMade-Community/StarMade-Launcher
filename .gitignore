@@ -1,0 +1,15 @@
+# Project and IDE Folders
+/.idea/
+/.gradle/
+
+# Build Outputs
+/build/
+
+# Game Files
+/StarMade/
+launch-settings.json
+
+# MacOS Files
+.DS_Store
+.java-version
+/native-packages/

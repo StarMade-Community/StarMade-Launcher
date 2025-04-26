@@ -1,0 +1,47 @@
+plugins {
+	id "java"
+	id "application"
+	id 'com.github.johnrengelman.shadow' version "8.1.1"
+}
+
+group 'smlauncher'
+mainClassName = 'smlauncher.StarMadeLauncher'
+version = '3.3.0'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(23)
+	}
+}
+
+application {
+	mainClassName = 'smlauncher.StarMadeLauncher'
+}
+
+repositories {
+	mavenCentral()
+	maven { url 'https://jitpack.io' }
+	maven { url "https://plugins.gradle.org/m2/" }
+	gradlePluginPortal()
+}
+
+dependencies {
+	implementation 'com.formdev:flatlaf:3.5.1'
+	implementation 'commons-io:commons-io:2.16.1'
+	implementation 'it.unimi.dsi:fastutil:8.5.14'
+	implementation 'org.codehaus.plexus:plexus-archiver:4.10.0'
+	implementation 'org.jasypt:jasypt:1.9.3'
+	implementation 'org.json:json:20240303'
+	implementation 'com.github.oshi:oshi-core:5.7.5'
+}
+
+jar {
+	manifest {
+		attributes 'Main-Class': 'smlauncher.StarMadeLauncher'
+	}
+	from {
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	}
+	duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+	archiveFileName = 'StarMade-Launcher.jar'
+}
