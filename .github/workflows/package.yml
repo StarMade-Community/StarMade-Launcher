@@ -242,13 +242,13 @@ jobs:
                 run: |
                     mkdir -p native-packages/linux/starmade-launcher/jre8
                     curl -L "${{ env.JAVA8_LINUX_URL }}" -o java8.tar.gz
-                    tar -xzf java8.tar.gz -d native-packages/linux/starmade-launcher/jre8
+                    tar -xzf java8.tar.gz -C native-packages/linux/starmade-launcher/jre8 --strip-components=1
             
             -   name: Download Java 23 Runtime
                 run: |
                     mkdir -p native-packages/linux/starmade-launcher/jre23
                     curl -L "${{ env.JAVA23_LINUX_URL }}" -o java23.tar.gz
-                    tar -xzf java23.tar.gz -d native-packages/linux/starmade-launcher/jre23
+                    tar -xzf java23.tar.gz -C native-packages/linux/starmade-launcher/jre23 --strip-components=1
             
             -   name: Create directory structure
                 run: |
