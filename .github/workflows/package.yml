@@ -312,11 +312,11 @@ jobs:
             
             -   name: Prepare Artifacts
                 run: |
-                    # Unzip any nested zips to ensure correct file structure
                     cd artifacts
+                    # Unzip with automatic overwrite
                     for file in *.zip; do
                       if [ -f "$file" ]; then
-                        unzip "$file"
+                        unzip -o "$file"  # The -o flag means "overwrite files"
                         rm "$file"
                       fi
                     done
