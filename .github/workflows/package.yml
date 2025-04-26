@@ -107,24 +107,22 @@ jobs:
                     Expand-Archive -Path reshacker.zip -DestinationPath reshacker
                     .\reshacker\ResourceHacker.exe -open src\main\native\StarMade-Launcher.exe -save src\main\native\StarMade-Launcher.exe -action addoverwrite -res src\main\resources\starmade.ico -mask ICONGROUP,MAINICON,
             
-            -   name: Package Windows distribution
+            -   name: Create package directory
+                shell: pwsh
                 run: |
-                    mkdir -p native-packages/windows/package
-                    copy src\main\native\StarMade-Launcher.exe native-packages\windows\package\
-                    copy native-packages\windows\StarMade-Launcher.jar native-packages\windows\package\
-                    copy StarMade-dedicated-server-windows.bat native-packages\windows\package\
+                    New-Item -Path "native-packages/windows/package" -ItemType Directory -Force
             
             -   name: Package Windows distribution
+                shell: pwsh
                 run: |
-                    mkdir -p native-packages/windows/package
-                    copy src\main\native\StarMade-Launcher.exe native-packages\windows\package\
-                    copy native-packages\windows\StarMade-Launcher.jar native-packages\windows\package\
-                    copy StarMade-dedicated-server-windows.bat native-packages\windows\package\
+                    Copy-Item src\main\native\StarMade-Launcher.exe -Destination native-packages\windows\package\
+                    Copy-Item native-packages\windows\StarMade-Launcher.jar -Destination native-packages\windows\package\
+                    Copy-Item StarMade-dedicated-server-windows.bat -Destination native-packages\windows\package\
             
             -   name: Create ZIP archive
+                shell: pwsh
                 run: |
-                    cd native-packages/windows/package
-                    7z a ../StarMade-Launcher-Windows.zip *
+                    Compress-Archive -Path native-packages\windows\package\* -DestinationPath native-packages\StarMade-Launcher-Windows.zip -Force
     
     package-macos:
         name: Package for MacOS
