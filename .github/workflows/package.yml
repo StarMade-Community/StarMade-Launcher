@@ -120,11 +120,11 @@ jobs:
                     copy src\main\native\StarMade-Launcher.exe native-packages\windows\package\
                     copy native-packages\windows\StarMade-Launcher.jar native-packages\windows\package\
                     copy StarMade-dedicated-server-windows.bat native-packages\windows\package\
-                    
-                    -   name: Create ZIP archive
-                        run: |
-                            cd native-packages/windows/package
-                            7z a ../StarMade-Launcher-Windows.zip *
+            
+            -   name: Create ZIP archive
+                run: |
+                    cd native-packages/windows/package
+                    7z a ../StarMade-Launcher-Windows.zip *
     
     package-macos:
         name: Package for MacOS
