@@ -1,25 +1,15 @@
 ﻿/**
  * StarMade Launcher - Native Component
  *
- * This is a unified C launcher for StarMade that works on Windows, MacOS, and Linux.
+ * This is a C launcher for StarMade that works on Windows, MacOS, and Linux.
  * It detects the current platform, finds the appropriate Java runtime, and launches
- * the StarMade Launcher JAR.
- *
- * Compilation:
- *
- * Windows (MinGW):
- *   gcc -o StarMade-Launcher.exe starmade_launcher.c -mwindows -lshlwapi
- *
- * macOS:
- *   gcc -o StarMade-Launcher starmade_launcher.c -framework CoreFoundation
- *
- * Linux:
- *   gcc -o StarMade-Launcher starmade_launcher.c
+ * the StarMade Launcher jar.
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 // Platform-specific includes
 #ifdef _WIN32
@@ -69,8 +59,8 @@
 int file_exists(const char *path);
 void get_executable_path(char *buffer, size_t buffer_size);
 int build_command_line(char *cmd_line, size_t cmd_line_size, const char *java_path,
-                      const char *jar_path, int argc, char *argv[]);
-int launch_process(const char *cmd_line, const char *working_dir);
+                      const char *jar_path, int argc, char *argv[], bool *debug_mode);
+int launch_process(const char *cmd_line, const char *working_dir, bool debug_mode);
 void show_error_message(const char *message);
 
 int main(int argc, char *argv[]) {
@@ -80,6 +70,15 @@ int main(int argc, char *argv[]) {
     char java23_path[MAX_PATH_LENGTH] = {0};
     char cmd_line[MAX_CMD_LENGTH] = {0};
     char *java_to_use = NULL;
+    bool debug_mode = false;
+
+    // Check for debug mode
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-debug") == 0) {
+            debug_mode = true;
+            break;
+        }
+    }
 
     // Get the executable directory
     get_executable_path(exe_path, sizeof(exe_path));
@@ -127,13 +126,13 @@ int main(int argc, char *argv[]) {
     #endif
 
     // Build command line
-    if (!build_command_line(cmd_line, sizeof(cmd_line), java_to_use, launcher_jar, argc, argv)) {
+    if (!build_command_line(cmd_line, sizeof(cmd_line), java_to_use, launcher_jar, argc, argv, &debug_mode)) {
         show_error_message("Failed to build command line");
         return 1;
     }
 
     // Launch process
-    if (!launch_process(cmd_line, exe_path)) {
+    if (!launch_process(cmd_line, exe_path, debug_mode)) {
         char error_msg[MAX_CMD_LENGTH + 100];
         snprintf(error_msg, sizeof(error_msg),
                 "Failed to start StarMade Launcher.\nCommand line: %s", cmd_line);
@@ -205,7 +204,7 @@ void get_executable_path(char *buffer, size_t buffer_size) {
 
 // Function to build the command line
 int build_command_line(char *cmd_line, size_t cmd_line_size, const char *java_path,
-                      const char *jar_path, int argc, char *argv[]) {
+                      const char *jar_path, int argc, char *argv[], bool *debug_mode) {
     size_t offset = 0;
 
     #ifdef _WIN32
@@ -213,6 +212,11 @@ int build_command_line(char *cmd_line, size_t cmd_line_size, const char *java_pa
         offset += snprintf(cmd_line + offset, cmd_line_size - offset, "\"%s\" ", java_path);
     #else
         offset += snprintf(cmd_line + offset, cmd_line_size - offset, "%s ", java_path);
+    #endif
+
+    // Do not show console window unless debug mode is enabled
+    #ifdef _WIN32
+        offset += snprintf(cmd_line + offset, cmd_line_size - offset, "-Xdock:icon=null ");
     #endif
 
     // Add platform-specific Java args
@@ -233,16 +237,18 @@ int build_command_line(char *cmd_line, size_t cmd_line_size, const char *java_pa
         offset += snprintf(cmd_line + offset, cmd_line_size - offset, "-jar %s ", jar_path);
     #endif
 
-    // Add any additional arguments passed to the launcher
+    // Add any additional arguments passed to the launcher, except -debug
     for (int i = 1; i < argc; i++) {
-        offset += snprintf(cmd_line + offset, cmd_line_size - offset, "%s ", argv[i]);
+        if (strcmp(argv[i], "-debug") != 0) {
+            offset += snprintf(cmd_line + offset, cmd_line_size - offset, "%s ", argv[i]);
+        }
     }
 
     return (offset > 0 && offset < cmd_line_size);
 }
 
 // Function to launch the process
-int launch_process(const char *cmd_line, const char *working_dir) {
+int launch_process(const char *cmd_line, const char *working_dir, bool debug_mode) {
     #ifdef _WIN32
         STARTUPINFOA si;
         PROCESS_INFORMATION pi;
@@ -251,6 +257,10 @@ int launch_process(const char *cmd_line, const char *working_dir) {
         si.cb = sizeof(si);
         ZeroMemory(&pi, sizeof(pi));
 
+        // Show window only in debug mode
+        si.dwFlags = STARTF_USESHOWWINDOW;
+        si.wShowWindow = debug_mode ? SW_SHOW : SW_HIDE;
+
         // Create process
         if (!CreateProcessA(
                 NULL,               // No module name (use command line)
@@ -258,7 +268,7 @@ int launch_process(const char *cmd_line, const char *working_dir) {
                 NULL,               // Process handle not inheritable
                 NULL,               // Thread handle not inheritable
                 FALSE,              // Set handle inheritance to FALSE
-                0,                  // No creation flags
+                debug_mode ? 0 : CREATE_NO_WINDOW, // Creation flags
                 NULL,               // Use parent's environment block
                 working_dir,        // Working directory
                 &si,                // Pointer to STARTUPINFO structure
@@ -273,10 +283,19 @@ int launch_process(const char *cmd_line, const char *working_dir) {
 
         return 1;
     #else
-        // Unix implementation - using system()
-        // Not ideal but simpler than implementing fork/exec
-        int result = system(cmd_line);
-        return (result != -1);
+        // Unix implementation - using system() with modification to suppress console
+        if (!debug_mode) {
+            // Redirect output to /dev/null
+            const char* quiet_cmd = malloc(strlen(cmd_line) + 20);
+            sprintf((char*)quiet_cmd, "%s > /dev/null 2>&1", cmd_line);
+            int result = system(quiet_cmd);
+            free((char*)quiet_cmd);
+            return (result != -1);
+        } else {
+            // Debug mode - output visible
+            int result = system(cmd_line);
+            return (result != -1);
+        }
     #endif
 }
 
