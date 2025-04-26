@@ -86,7 +86,7 @@ jobs:
                 with:
                     msystem: mingw64
                     update: true
-                    install: mingw-w64-x86_64-gcc mingres
+                    install: mingw-w64-x86_64-gcc windres
             
             -   name: Create native folder
                 shell: pwsh
