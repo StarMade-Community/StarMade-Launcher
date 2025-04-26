@@ -4,38 +4,60 @@ import smlauncher.ui.controllers.MainController;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Community panel to display community servers and links
  */
 public class CommunityPanel extends BasePanel {
+	// Discord connection URLs
 	private static final String STARMADE_DISCORD = "https://discord.gg/starmade";
 	private static final String STARLOADER_DISCORD = "https://discord.gg/Y2UR7AXfsE";
+
+	// Community server information
+	private static final List<CommunityServer> COMMUNITY_SERVERS = new ArrayList<>() {{
+		add(new CommunityServer("The Cake Network", "Official StarMade community server", "https://discord.gg/KXpxqdn"));
+		add(new CommunityServer("Skies of Eden", "Community-run StarMade server", "https://discord.gg/4gvTW7655H"));
+	}};
+
+	/**
+	 * Represents a community server entry
+	 */
+	private static class CommunityServer {
+		final String name;
+		final String description;
+		final String link;
+
+		CommunityServer(String name, String description, String link) {
+			this.name = name;
+			this.description = description;
+			this.link = link;
+		}
+	}
 
 	public CommunityPanel(MainController mainController) {
 		super(mainController);
 		initializeComponents();
 	}
 
-	private void initializeComponents() {
-		// Set layout to BorderLayout
+	@Override
+	protected void initializeComponents() {
+		// Set layout to BorderLayout with padding
 		setLayout(new BorderLayout(10, 10));
+		setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+		// Title
+		JLabel titleLabel = createTitleLabel("StarMade Community");
+		add(titleLabel, BorderLayout.NORTH);
+
+		// Community description
+		JTextArea descriptionArea = createDescriptionArea("Welcome to the StarMade Community!\n\n" + "Connect with other players, share your experiences, " + "get help, and stay up to date with the latest developments.\n\n" + "Whether you're a new player or a seasoned space architect, " + "there's a place for you in the StarMade community.");
+		add(new JScrollPane(descriptionArea), BorderLayout.CENTER);
 
 		// Discord connections panel
 		JPanel discordPanel = createDiscordConnectionsPanel();
-		add(discordPanel, BorderLayout.NORTH);
-
-		// Community description
-		JTextArea communityDescription = createCommunityDescription();
-		add(new JScrollPane(communityDescription), BorderLayout.CENTER);
-
-		// Community servers table
-		JTable communityServersTable = createCommunityServersTable();
-		add(new JScrollPane(communityServersTable), BorderLayout.SOUTH);
+		add(discordPanel, BorderLayout.SOUTH);
 	}
 
 	/**
@@ -44,12 +66,15 @@ public class CommunityPanel extends BasePanel {
 	 */
 	private JPanel createDiscordConnectionsPanel() {
 		JPanel discordPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-		discordPanel.setBorder(BorderFactory.createTitledBorder("Community Connections"));
+		discordPanel.setBackground(Colors.BACKGROUND_DARK);
+		discordPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Colors.ACCENT_BLUE), "Community Connections"));
 
+		// Create StarMade Discord button
 		JButton starmadeDiscordButton = createDiscordButton("StarMade Official Discord", STARMADE_DISCORD);
-		JButton starloaderDiscordButton = createDiscordButton("StarLoader Discord", STARLOADER_DISCORD);
-
 		discordPanel.add(starmadeDiscordButton);
+
+		// Create StarLoader Discord button
+		JButton starloaderDiscordButton = createDiscordButton("StarLoader Discord", STARLOADER_DISCORD);
 		discordPanel.add(starloaderDiscordButton);
 
 		return discordPanel;
@@ -62,64 +87,6 @@ public class CommunityPanel extends BasePanel {
 	 * @return Styled JButton
 	 */
 	private JButton createDiscordButton(String text, String url) {
-		JButton button = new JButton(text);
-		button.addActionListener((ActionEvent e) -> openURL(url));
-		button.setFocusPainted(false);
-		return button;
-	}
-
-	/**
-	 * Create community description text area
-	 * @return JTextArea with community description
-	 */
-	private JTextArea createCommunityDescription() {
-		JTextArea communityDescription = new JTextArea();
-		communityDescription.setText("Welcome to the StarMade Community!\n\n" + "Connect with other players, share your experiences, " + "get help, and stay up to date with the latest developments.\n\n" + "Whether you're a new player or a seasoned space architect, " + "there's a place for you in the StarMade community.");
-		communityDescription.setEditable(false);
-		communityDescription.setLineWrap(true);
-		communityDescription.setWrapStyleWord(true);
-		communityDescription.setBackground(getBackground());
-		communityDescription.setForeground(Color.WHITE);
-		communityDescription.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-		return communityDescription;
-	}
-
-	/**
-	 * Create a table of community servers
-	 * @return JTable with community server information
-	 */
-	private JTable createCommunityServersTable() {
-		String[] columnNames = {"Server Name", "Description", "Link"};
-		Object[][] data = {{"The Cake Network", "Official StarMade community server", "https://discord.gg/KXpxqdn"}, {"Skies of Eden", "Community-run StarMade server", "https://discord.gg/4gvTW7655H"}};
-
-		JTable serversTable = new JTable(data, columnNames) {
-			@Override
-			public boolean isCellEditable(int row, int column) {
-				return false;
-			}
-		};
-
-		// Make the last column (link) clickable
-		serversTable.addMouseListener(new java.awt.event.MouseAdapter() {
-			@Override
-			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				int row = serversTable.rowAtPoint(evt.getPoint());
-				int col = serversTable.columnAtPoint(evt.getPoint());
-				if(row >= 0 && col == 2) {
-					String url = (String) serversTable.getValueAt(row, col);
-					openURL(url);
-				}
-			}
-		});
-
-		// Customize table appearance
-		serversTable.setBackground(new Color(25, 25, 31));
-		serversTable.setForeground(Color.WHITE);
-		serversTable.setSelectionBackground(new Color(67, 128, 148));
-		serversTable.getTableHeader().setBackground(new Color(35, 35, 41));
-		serversTable.getTableHeader().setForeground(Color.WHITE);
-
-		return serversTable;
+		return createStyledButton(text, e -> openURL(url), new Color(114, 137, 218)); // Discord color
 	}
 }
