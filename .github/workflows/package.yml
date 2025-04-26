@@ -118,6 +118,8 @@ jobs:
                     Copy-Item src\main\native\StarMade-Launcher.exe -Destination native-packages\windows\package\
                     Copy-Item native-packages\windows\StarMade-Launcher.jar -Destination native-packages\windows\package\
                     Copy-Item StarMade-dedicated-server-windows.bat -Destination native-packages\windows\package\
+                    Copy-Item native-packages\windows\jre8 -Destination native-packages\windows\package\
+                    Copy-Item native-packages\windows\jre23 -Destination native-packages\windows\package\
             
             -   name: Create ZIP archive
                 shell: pwsh
@@ -169,7 +171,7 @@ jobs:
                     mkdir -p src/main/native
                     cp src/main/c/starmade_launcher.c src/main/native/starmade_launcher.c
             
-            -   name: Compile macOS launcher
+            -   name: Compile MacOS launcher
                 run: |
                     cd src/main/native
                     gcc -o StarMade-Launcher starmade_launcher.c -framework CoreFoundation
@@ -220,7 +222,7 @@ jobs:
             -   name: Create ZIP archive
                 run: |
                     cd native-packages/macos
-                    zip -r ../StarMade-Launcher-MacOS.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command
+                    zip -r ../StarMade-Launcher-MacOS.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command jre8 jre23
             
             -   name: Upload MacOS package
                 uses: actions/upload-artifact@v4
@@ -240,23 +242,19 @@ jobs:
                 uses: actions/download-artifact@v4
                 with:
                     name: starmade-launcher-jar
-                    path: native-packages/linux/starmade-launcher/
+                    path: native-packages/linux/
             
             -   name: Download Java 8 Runtime
                 run: |
-                    mkdir -p native-packages/linux/starmade-launcher/jre8
+                    mkdir -p native-packages/linux/jre8
                     curl -L "${{ env.JAVA8_LINUX_URL }}" -o java8.tar.gz
-                    tar -xzf java8.tar.gz -C native-packages/linux/starmade-launcher/jre8 --strip-components=1
+                    tar -xzf java8.tar.gz -C native-packages/linux/jre8 --strip-components=1
             
             -   name: Download Java 23 Runtime
                 run: |
-                    mkdir -p native-packages/linux/starmade-launcher/jre23
+                    mkdir -p native-packages/linux/jre23
                     curl -L "${{ env.JAVA23_LINUX_URL }}" -o java23.tar.gz
-                    tar -xzf java23.tar.gz -C native-packages/linux/starmade-launcher/jre23 --strip-components=1
-            
-            -   name: Create directory structure
-                run: |
-                    mkdir -p native-packages/linux/starmade-launcher
+                    tar -xzf java23.tar.gz -C native-packages/linux/jre23 --strip-components=1
             
             -   name: Create native folder
                 run: mkdir -p src/main/native
@@ -273,38 +271,18 @@ jobs:
             
             -   name: Copy native launcher
                 run: |
-                    cp src/main/native/StarMade-Launcher native-packages/linux/starmade-launcher/
-                    chmod +x native-packages/linux/starmade-launcher/StarMade-Launcher
+                    cp src/main/native/StarMade-Launcher native-packages/linux/
+                    chmod +x native-packages/linux/StarMade-Launcher
             
             -   name: Copy server script
                 run: |
-                    cp StarMade-dedicated-server-linux.sh native-packages/linux/starmade-launcher/
-                    chmod +x native-packages/linux/starmade-launcher/StarMade-dedicated-server-linux.sh
-            
-            -   name: Create Desktop Entry
-                run: |
-                    mkdir -p native-packages/linux/starmade-launcher/desktop
-                    
-                    # Create desktop entry file
-                    cat > native-packages/linux/starmade-launcher/desktop/starmade-launcher.desktop << EOF
-                    [Desktop Entry]
-                    Type=Application
-                    Name=StarMade Launcher
-                    Comment=Launcher for StarMade
-                    Exec=StarMade-Launcher
-                    Icon=starmade-launcher
-                    Terminal=false
-                    Categories=Game;
-                    EOF
-                    
-                    # Copy icon
-                    mkdir -p native-packages/linux/starmade-launcher/desktop/icons
-                    cp src/main/resources/starmade.png native-packages/linux/starmade-launcher/desktop/icons/starmade-launcher.png
+                    cp StarMade-dedicated-server-linux.sh native-packages/linux/
+                    chmod +x native-packages/linux/StarMade-dedicated-server-linux.sh
             
             -   name: Create tar.gz archive
                 run: |
                     cd native-packages/linux
-                    tar -czf ../StarMade-Launcher-Linux.tar.gz starmade-launcher
+                    tar -czf ../StarMade-Launcher-Linux.tar.gz StarMade-Launcher StarMade-Launcher.jar StarMade-dedicated-server-linux.sh jre8 jre23
             
             -   name: Upload Linux package
                 uses: actions/upload-artifact@v4
