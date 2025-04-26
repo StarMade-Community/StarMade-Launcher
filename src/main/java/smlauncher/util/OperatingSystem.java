@@ -24,6 +24,7 @@ public enum OperatingSystem {
 	public final String javaPath; // Path to the java executable
 	// Fields
 	private final String[] names; // Names used by Java
+//	private String serial;
 
 	OperatingSystem(String[] names, String zipExtension, String javaPath) {
 		this.names = names;
@@ -43,6 +44,9 @@ public enum OperatingSystem {
 		for(OperatingSystem os : values()) {
 			for(String name : os.names) {
 				if(osName.contains(name)) {
+					// do some stuff with serial
+//					os.serial = "not retrieved";
+//					System.err.println("READ SERIAL for " + os.name() + ": " + os.serial);
 					currentOS = os;
 					return currentOS;
 				}
@@ -93,4 +97,16 @@ public enum OperatingSystem {
 			return appDir;
 		}
 	}
+
+	//	private String getSerial(){
+	//		switch(this){
+	//			case LINUX: return Hardware4Nix.getSerialNumber();
+	//			case SOLARIS: return Hardware4Nix.getSerialNumber();
+	//			case MAC: return Hardware4Mac.getSerialNumber();
+	//			case WINDOWS: return Hardware4Win.getSerialNumber();
+	//			case UNKNOWN: return Hardware4Win.getSerialNumber();
+	//			default: throw new IllegalArgumentException("No operationg system: "+OS);
+	//		}
+	//	}
+
 }
