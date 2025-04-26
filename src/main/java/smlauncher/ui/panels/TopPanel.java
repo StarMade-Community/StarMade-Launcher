@@ -1,4 +1,4 @@
-package smlauncher.ui.components;
+package smlauncher.ui.panels;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,9 +1,9 @@
 package smlauncher.ui;
 
-import smlauncher.ui.components.LeftSidePanel;
-import smlauncher.ui.components.TopPanel;
-import smlauncher.ui.components.FooterPanel;
 import smlauncher.ui.controllers.MainController;
+import smlauncher.ui.panels.FooterPanel;
+import smlauncher.ui.panels.LeftSidePanel;
+import smlauncher.ui.panels.TopPanel;
 import smlauncher.util.logging.LauncherLogger;
 
 import javax.swing.*;
