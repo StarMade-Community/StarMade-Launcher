@@ -69,7 +69,7 @@ jobs:
                 run: |
                     mkdir -p native-packages/windows/
                     curl -L "${{ env.JAVA8_WINDOWS_URL }}" -o java8.zip
-                    unzip java8.zip -d native-packages/windows
+                    unzip java8.zip -d native-packages/windows/jre8
                     mkdir -p native-packages/windows/package/jre8
                     Copy-Item -Path native-packages/windows/jre8/* -Destination native-packages/windows/package/jre8/ -Recurse -Force
             
@@ -77,7 +77,7 @@ jobs:
                 run: |
                     mkdir -p native-packages/windows/jre23
                     curl -L "${{ env.JAVA23_WINDOWS_URL }}" -o java23.zip
-                    unzip java23.zip -d native-packages/windows
+                    unzip java23.zip -d native-packages/windows/jre23
                     mkdir -p native-packages/windows/package/jre23
                     Copy-Item -Path native-packages/windows/jre23/* -Destination native-packages/windows/package/jre23/ -Recurse -Force
             
@@ -152,13 +152,13 @@ jobs:
                 run: |
                     mkdir -p native-packages/macos/jre8
                     curl -L "${{ env.JAVA8_MACOS_URL }}" -o java8.tar.gz
-                    tar -xzf java8.tar.gz -C native-packages/macos
+                    tar -xzf java8.tar.gz -C native-packages/macos/jre8
             
             -   name: Download Java 23 Runtime
                 run: |
                     mkdir -p native-packages/macos/jre23
                     curl -L "${{ env.JAVA23_MACOS_URL }}" -o java23.tar.gz
-                    tar -xzf java23.tar.gz -C native-packages/macos
+                    tar -xzf java23.tar.gz -C native-packages/macos/jre23
             
             -   name: Create app bundle structure
                 run: |
