@@ -80,36 +80,68 @@ jobs:
                     unzip java23.zip -d native-packages/windows/jre23
                     mkdir -p native-packages/windows/package/jre23
                     Copy-Item -Path native-packages/windows/jre23/* -Destination native-packages/windows/package/jre23/ -Recurse -Force
-            
+                    
             -   name: Setup MinGW
                 uses: msys2/setup-msys2@v2
                 with:
                     msystem: mingw64
                     update: true
-                    install: mingw-w64-x86_64-gcc
+                    install: mingw-w64-x86_64-gcc mingres
             
             -   name: Create native folder
                 shell: pwsh
                 run: |
                     New-Item -Path "src/main/native" -ItemType Directory -Force
             
-            -   name: Copy unified launcher code
+            -   name: Copy unified launcher code and resource file
                 shell: pwsh
                 run: |
                     Copy-Item "src/main/c/starmade_launcher.c" -Destination "src/main/native/starmade_launcher.c"
+                    Copy-Item "src/main/resources/starmade.ico" -Destination "src/main/native/starmade.ico"
+                    
+                    # Create resource script
+                    @"
+                    #include <windows.h>
+                    IDI_ICON1 ICON "starmade.ico"
+                    "@ | Out-File -Encoding ASCII "src/main/native/starmade.rc"
             
             -   name: Compile Windows launcher
                 shell: msys2 {0}
                 run: |
                     cd src/main/native
-                    gcc -o StarMade-Launcher.exe starmade_launcher.c -mwindows -lshlwapi
+                    windres starmade.rc -O coff -o starmade_resource.o
+                    gcc -c starmade_launcher.c
+                    gcc -o StarMade-Launcher.exe starmade_launcher.o starmade_resource.o -mwindows -lshlwapi\
+                    
+            #            -   name: Setup MinGW
+            #                uses: msys2/setup-msys2@v2
+            #                with:
+            #                    msystem: mingw64
+            #                    update: true
+            #                    install: mingw-w64-x86_64-gcc
             
-            -   name: Set icon with Resource Hacker
-                shell: pwsh
-                run: |
-                    curl -L -o reshacker.zip http://www.angusj.com/resourcehacker/resource_hacker.zip
-                    Expand-Archive -Path reshacker.zip -DestinationPath reshacker
-                    .\reshacker\ResourceHacker.exe -open src\main\native\StarMade-Launcher.exe -save src\main\native\StarMade-Launcher.exe -action addoverwrite -res src\main\resources\starmade.ico -mask ICONGROUP,MAINICON,
+            #            -   name: Create native folder
+            #                shell: pwsh
+            #                run: |
+            #                    New-Item -Path "src/main/native" -ItemType Directory -Force
+            
+            #            -   name: Copy unified launcher code
+            #                shell: pwsh
+            #                run: |
+            #                    Copy-Item "src/main/c/starmade_launcher.c" -Destination "src/main/native/starmade_launcher.c"
+            
+            #            -   name: Compile Windows launcher
+            #                shell: msys2 {0}
+            #                run: |
+            #                    cd src/main/native
+            #                    gcc -o StarMade-Launcher.exe starmade_launcher.c -mwindows -lshlwapi
+            
+            #            -   name: Set icon with Resource Hacker
+            #                shell: pwsh
+            #                run: |
+            #                    curl -L -o reshacker.zip http://www.angusj.com/resourcehacker/resource_hacker.zip
+            #                    Expand-Archive -Path reshacker.zip -DestinationPath reshacker
+            #                    .\reshacker\ResourceHacker.exe -open src\main\native\StarMade-Launcher.exe -save src\main\native\StarMade-Launcher.exe -action addoverwrite -res src\main\resources\starmade.ico -mask ICONGROUP,MAINICON,
             
             -   name: Create package directory
                 shell: pwsh
@@ -308,7 +340,7 @@ jobs:
                 with:
                     path: artifacts
                     merge-multiple: true
-                    
+            
             -   name: Create Draft Release
                 uses: softprops/action-gh-release@v2
                 env:
