@@ -300,7 +300,6 @@ jobs:
             - package-macos
             - package-linux
         runs-on: ubuntu-latest
-        
         steps:
             -   uses: actions/checkout@v3
             
@@ -309,29 +308,7 @@ jobs:
                 with:
                     path: artifacts
                     merge-multiple: true
-            
-            -   name: Prepare Artifacts
-                run: |
-                    cd artifacts
-                    # Unzip with automatic overwrite
-                    for file in *.zip; do
-                      if [ -f "$file" ]; then
-                        unzip -o "$file"  # The -o flag means "overwrite files"
-                        rm "$file"
-                      fi
-                    done
                     
-                    # Unpack tar.gz files
-                    for file in *.tar.gz; do
-                      if [ -f "$file" ]; then
-                        tar -xzvf "$file"
-                        rm "$file"
-                      fi
-                    done
-                    
-                    # List final contents
-                    ls -R
-            
             -   name: Create Draft Release
                 uses: softprops/action-gh-release@v2
                 env:
@@ -341,7 +318,6 @@ jobs:
                     tag_name: v${{ needs.build-jar.outputs.project_version }}
                     name: StarMade Launcher v${{ needs.build-jar.outputs.project_version }}
                     files: |
-                        artifacts/*
-                        StarMade-Launcher-Linux.tar.gz
-                        StarMade-Launcher-MacOS.zip
-                        StarMade-Launcher-Windows.zip
+                        artifacts/StarMade-Launcher-Windows.zip
+                        artifacts/StarMade-Launcher-MacOS.zip
+                        artifacts/StarMade-Launcher-Linux.tar.gz
