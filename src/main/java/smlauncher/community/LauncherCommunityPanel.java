@@ -20,7 +20,7 @@ public class LauncherCommunityPanel extends JPanel {
 
 	public static final String MAIN_DISCORD_URL = "https://discord.gg/SXbkYpU";
 	public static final String STARLOADER_DISCORD_URL = "https://discord.gg/Y2UR7AXfsE";
-	public static final String COMMUNITY_SERVER_JSON_URL = "https://raw.githubusercontent.com/garretreichenbach/New-StarMade-Launcher/main/community-servers.json";
+	public static final String COMMUNITY_SERVER_JSON_URL = "https://raw.githubusercontent.com/StarMade-Community/StarMade-Launcher/refs/heads/main/community-servers.json";
 
 	public LauncherCommunityPanel() {
 		super(true);

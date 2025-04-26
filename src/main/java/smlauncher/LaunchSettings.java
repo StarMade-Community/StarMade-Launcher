@@ -15,7 +15,7 @@ public final class LaunchSettings {
 
 	// TODO store more properties
 
-	private static final String SETTINGS_FILENAME = "./StarMade/launch-settings.json";
+	private static final String SETTINGS_FILENAME = "launch-settings.json";
 	private static JSONObject launchSettings;
 	
 	// Settings File Methods
@@ -54,7 +54,7 @@ public final class LaunchSettings {
 
 	private static JSONObject getDefaultLaunchSettings() {
 		JSONObject settings = new JSONObject();
-		settings.put("installDir", new File("StarMade/StarMade").getAbsolutePath());
+		settings.put("installDir", new File("StarMade").getAbsolutePath());
 		settings.put("jvm_args", "");
 		settings.put("lastUsedBranch", 0); // Release
 		settings.put("lastUsedVersion", "NONE");
