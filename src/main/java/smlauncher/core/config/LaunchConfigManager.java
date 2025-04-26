@@ -11,7 +11,7 @@ import java.nio.file.Paths;
  * Manages launcher configuration settings
  */
 public class LaunchConfigManager {
-	
+
 	private static final String CONFIG_FILE_PATH = "./StarMade/launch-settings.json";
 	private JSONObject configData;
 
