@@ -36,7 +36,7 @@ import java.util.Objects;
  */
 public class StarMadeLauncher extends JFrame {
 
-	public static final String BUG_REPORT_URL = "https://github.com/garretreichenbach/New-StarMade-Launcher/issues";
+	public static final String BUG_REPORT_URL = "https://github.com/StarMade-Community/StarMade-Launcher/issues";
 	private static final String J23ARGS = "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED";
 	private static IndexFileEntry gameVersion;
 	private static GameBranch lastUsedBranch = GameBranch.RELEASE;
