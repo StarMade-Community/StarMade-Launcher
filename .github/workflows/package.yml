@@ -67,7 +67,7 @@ jobs:
             
             -   name: Download Java 8 Runtime
                 run: |
-                    mkdir -p native-packages/windows/
+                    mkdir -p native-packages/windows/jre8
                     curl -L "${{ env.JAVA8_WINDOWS_URL }}" -o java8.zip
                     unzip java8.zip -d native-packages/windows/jre8
                     mkdir -p native-packages/windows/package/jre8
