@@ -1,4 +1,4 @@
-package smlauncher.core.config;
+package smlauncher.manager;
 
 import org.json.JSONObject;
 
@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 public class LaunchConfigManager {
 
 	private static final String CONFIG_FILE_PATH = "./StarMade/launch-settings.json";
-	private JSONObject configData;
+	public JSONObject configData;
 
 	public LaunchConfigManager() {
 		loadConfiguration();
@@ -70,25 +70,4 @@ public class LaunchConfigManager {
 			e.printStackTrace();
 		}
 	}
-
-	// Getter methods for configuration values
-	public String getInstallDir() {
-		return configData.getString("installDir");
-	}
-
-	public void setInstallDir(String dir) {
-		configData.put("installDir", dir);
-		saveConfiguration();
-	}
-
-	public String getLastUsedVersion() {
-		return configData.getString("lastUsedVersion");
-	}
-
-	public void setLastUsedVersion(String version) {
-		configData.put("lastUsedVersion", version);
-		saveConfiguration();
-	}
-
-	// Add more getter and setter methods as needed
 }

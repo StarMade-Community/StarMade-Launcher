@@ -1,7 +1,7 @@
 package smlauncher.ui.panels;
 
 import smlauncher.ui.controllers.MainController;
-import smlauncher.util.logging.LauncherLogger;
+import smlauncher.util.LauncherLogger;
 
 import javax.swing.*;
 import java.awt.*;

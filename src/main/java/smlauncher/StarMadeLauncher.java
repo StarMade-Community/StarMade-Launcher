@@ -1,10 +1,10 @@
 package smlauncher;
 
-import smlauncher.core.config.LaunchConfigManager;
-import smlauncher.core.model.GameVersionManager;
+import smlauncher.manager.LaunchConfigManager;
+import smlauncher.manager.GameVersionManager;
 import smlauncher.ui.LauncherFrame;
 import smlauncher.ui.controllers.MainController;
-import smlauncher.util.logging.LauncherLogger;
+import smlauncher.util.LauncherLogger;
 
 import javax.swing.*;
 

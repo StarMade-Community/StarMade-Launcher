@@ -1,4 +1,4 @@
-package smlauncher.util.logging;
+package smlauncher.util;
 
 import java.io.IOException;
 import java.io.PrintWriter;

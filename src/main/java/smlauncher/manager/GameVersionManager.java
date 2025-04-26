@@ -1,7 +1,6 @@
-package smlauncher.core.model;
+package smlauncher.manager;
 
-import smlauncher.core.config.LaunchConfigManager;
-import smlauncher.util.logging.LauncherLogger;
+import smlauncher.util.LauncherLogger;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -16,6 +15,7 @@ import java.util.List;
  * Manages game versions and branches
  */
 public class GameVersionManager {
+
 	// Enum to represent game branches
 	public enum GameBranch {
 		RELEASE("Release", "http://files.star-made.org/releasebuildindex"),
@@ -30,6 +30,57 @@ public class GameVersionManager {
 			this.name = name;
 			this.versionIndexUrl = versionIndexUrl;
 		}
+	}
+
+	public boolean validateVersion(GameVersion version) {
+		if(version == null) {
+			return false;
+		}
+		if(version.version == null || version.version.isEmpty()) {
+			return false;
+		}
+		if(version.build == null || version.build.isEmpty()) {
+			return false;
+		}
+		if(version.branch == null) {
+			return false;
+		}
+		return version.path != null && !version.path.isEmpty();
+	}
+
+	public int compareVersions(GameVersion latestVersion, GameVersion currentVersion) {
+		if(latestVersion == null || currentVersion == null) {
+			return 0;
+		}
+		if(latestVersion.branch != currentVersion.branch) {
+			return 0;
+		}
+		if(latestVersion.version.equals(currentVersion.version)) {
+			return 0;
+		}
+		if(latestVersion.build.equals(currentVersion.build)) {
+			return 0;
+		}
+		return latestVersion.compareTo(currentVersion);
+	}
+
+	public GameVersion findVersionByString(String lastUsedVersionStr) {
+		for(GameVersion version : releaseVersions) {
+			if(version.version.equals(lastUsedVersionStr)) {
+				return version;
+			}
+		}
+		for(GameVersion version : devVersions) {
+			if(version.version.equals(lastUsedVersionStr)) {
+				return version;
+			}
+		}
+		for(GameVersion version : preReleaseVersions) {
+			if(version.version.equals(lastUsedVersionStr)) {
+				return version;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -85,23 +136,22 @@ public class GameVersionManager {
 			connection.setReadTimeout(10000);
 			connection.setRequestProperty("User-Agent", "StarMade-Launcher");
 
-			try (BufferedReader reader = new BufferedReader(
-					new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+			try(BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
 
 				String line;
-				while ((line = reader.readLine()) != null) {
+				while((line = reader.readLine()) != null) {
 					versions.add(parseVersionEntry(line, branch));
 				}
 
 				// Sort versions in descending order
 				Collections.sort(versions, Collections.reverseOrder());
 			}
-		} catch (Exception e) {
+		} catch(Exception e) {
 			logger.warning("Failed to load versions for branch " + branch.name, e);
 		}
 
 		// Cache versions based on branch
-		switch (branch) {
+		switch(branch) {
 			case RELEASE:
 				releaseVersions.clear();
 				releaseVersions.addAll(versions);

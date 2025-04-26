@@ -1,8 +1,8 @@
-﻿package smlauncher.ui.panels;
+package smlauncher.ui.panels;
 
-import smlauncher.core.model.GameVersionManager;
+import smlauncher.manager.GameVersionManager;
 import smlauncher.ui.controllers.MainController;
-import smlauncher.util.logging.LauncherLogger;
+import smlauncher.util.LauncherLogger;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,6 +14,7 @@ import java.util.List;
  * Handles version selection, launch modes, and other footer functionalities
  */
 public class FooterPanel extends JPanel {
+
 	private final MainController mainController;
 	private final LauncherLogger logger;
 
@@ -80,19 +81,19 @@ public class FooterPanel extends JPanel {
 	}
 
 	private JComboBox<String> createBranchDropdown() {
-		JComboBox<String> dropdown = new JComboBox<>(new String[]{"Release", "Pre-Release", "Development"});
+		JComboBox<String> dropdown = new JComboBox<>(new String[] {"Release", "Pre-Release", "Dev"});
 		dropdown.setFocusable(false);
 		dropdown.setBackground(new Color(25, 25, 31));
 		dropdown.setForeground(Color.WHITE);
 
 		// Set initial branch based on last used
-		String lastUsedBranch = mainController.getLastUsedVersion();
-		if(lastUsedBranch != null) {
-			// Logic to select appropriate branch based on last used version
-			// This is a placeholder and might need refinement
-			dropdown.setSelectedIndex(0);
+		String lastUsedBranch = mainController.getLastUsedVersion().branch.name;
+		for(int i = 0; i < dropdown.getItemCount(); i++) {
+			if(dropdown.getItemAt(i).equalsIgnoreCase(lastUsedBranch)) {
+				dropdown.setSelectedIndex(i);
+				break;
+			}
 		}
-
 		return dropdown;
 	}
 
@@ -109,6 +110,8 @@ public class FooterPanel extends JPanel {
 	}
 
 	private void updateVersionDropdown() {
+		versionDropdown = new JComboBox<>();
+
 		// Get current selected branch
 		GameVersionManager.GameBranch selectedBranch = mapIndexToBranch(branchDropdown.getSelectedIndex());
 
@@ -128,14 +131,11 @@ public class FooterPanel extends JPanel {
 	}
 
 	private GameVersionManager.GameBranch mapIndexToBranch(int index) {
-		switch(index) {
-			case 1:
-				return GameVersionManager.GameBranch.PRE_RELEASE;
-			case 2:
-				return GameVersionManager.GameBranch.DEV;
-			default:
-				return GameVersionManager.GameBranch.RELEASE;
-		}
+		return switch(index) {
+			case 1 -> GameVersionManager.GameBranch.PRE_RELEASE;
+			case 2 -> GameVersionManager.GameBranch.DEV;
+			default -> GameVersionManager.GameBranch.RELEASE;
+		};
 	}
 
 	private JTextField createPortField() {
