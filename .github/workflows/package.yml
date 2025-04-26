@@ -111,38 +111,8 @@ jobs:
                     cd src/main/native
                     windres starmade.rc -O coff -o starmade_resource.o
                     gcc -c starmade_launcher.c
-                    gcc -o StarMade-Launcher.exe starmade_launcher.o starmade_resource.o -mwindows -lshlwapi\
+                    gcc -o StarMade-Launcher.exe starmade_launcher.o starmade_resource.o -mwindows -lshlwapi
                     
-            #            -   name: Setup MinGW
-            #                uses: msys2/setup-msys2@v2
-            #                with:
-            #                    msystem: mingw64
-            #                    update: true
-            #                    install: mingw-w64-x86_64-gcc
-            
-            #            -   name: Create native folder
-            #                shell: pwsh
-            #                run: |
-            #                    New-Item -Path "src/main/native" -ItemType Directory -Force
-            
-            #            -   name: Copy unified launcher code
-            #                shell: pwsh
-            #                run: |
-            #                    Copy-Item "src/main/c/starmade_launcher.c" -Destination "src/main/native/starmade_launcher.c"
-            
-            #            -   name: Compile Windows launcher
-            #                shell: msys2 {0}
-            #                run: |
-            #                    cd src/main/native
-            #                    gcc -o StarMade-Launcher.exe starmade_launcher.c -mwindows -lshlwapi
-            
-            #            -   name: Set icon with Resource Hacker
-            #                shell: pwsh
-            #                run: |
-            #                    curl -L -o reshacker.zip http://www.angusj.com/resourcehacker/resource_hacker.zip
-            #                    Expand-Archive -Path reshacker.zip -DestinationPath reshacker
-            #                    .\reshacker\ResourceHacker.exe -open src\main\native\StarMade-Launcher.exe -save src\main\native\StarMade-Launcher.exe -action addoverwrite -res src\main\resources\starmade.ico -mask ICONGROUP,MAINICON,
-            
             -   name: Create package directory
                 shell: pwsh
                 run: |
