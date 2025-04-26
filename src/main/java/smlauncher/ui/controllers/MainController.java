@@ -1,4 +1,4 @@
-﻿package smlauncher.ui.controllers;
+package smlauncher.ui.controllers;
 
 import smlauncher.core.config.LaunchConfigManager;
 import smlauncher.core.model.GameVersionManager;

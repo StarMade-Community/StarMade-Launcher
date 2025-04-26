@@ -1,4 +1,4 @@
-﻿package smlauncher.ui;
+package smlauncher.ui;
 
 import smlauncher.ui.components.LeftSidePanel;
 import smlauncher.ui.components.TopPanel;

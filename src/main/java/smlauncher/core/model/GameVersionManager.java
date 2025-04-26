@@ -1,4 +1,4 @@
-﻿package smlauncher.core.model;
+package smlauncher.core.model;
 
 import smlauncher.core.config.LaunchConfigManager;
 import smlauncher.util.logging.LauncherLogger;

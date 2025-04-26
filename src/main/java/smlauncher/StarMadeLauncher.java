@@ -1,4 +1,4 @@
-﻿package smlauncher;
+package smlauncher;
 
 import smlauncher.core.config.LaunchConfigManager;
 import smlauncher.core.model.GameVersionManager;
@@ -7,7 +7,6 @@ import smlauncher.ui.controllers.MainController;
 import smlauncher.util.logging.LauncherLogger;
 
 import javax.swing.*;
-import java.awt.*;
 
 /**
  * Main entry point for the StarMade Launcher application.

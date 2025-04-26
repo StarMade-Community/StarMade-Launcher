@@ -1,4 +1,4 @@
-﻿package smlauncher.ui.panels;
+package smlauncher.ui.panels;
 
 import smlauncher.ui.controllers.MainController;
 

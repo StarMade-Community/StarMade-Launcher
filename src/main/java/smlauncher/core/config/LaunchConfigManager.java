@@ -1,4 +1,4 @@
-﻿package smlauncher.core.config;
+package smlauncher.core.config;
 
 import org.json.JSONObject;
 

@@ -1,4 +1,4 @@
-﻿package smlauncher.ui.panels;
+package smlauncher.ui.panels;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
