@@ -8,13 +8,13 @@ permissions:
 
 env:
     # TODO: These should be hosted on Schine's AWS or something
-    JAVA8_WINDOWS_URL: https://www.dropbox.com/scl/fi/kmnl9nmzbsnvi9wv6tcil/jre8_windows.zip?rlkey=ep53r4x98ghgj6wmrpoe7luzy&st=xmi237zf&dl=1
-    JAVA8_MACOS_URL: https://www.dropbox.com/scl/fi/6l8j8tqwj0447a7f5jzbn/jre8_macos.tar.gz?rlkey=orpat8220q3wl9r5taolm9ac8&st=tlx26tqs&dl=1
-    JAVA8_LINUX_URL: https://www.dropbox.com/scl/fi/kai4jckj835aol4d7rsvv/jre8_linux.tar.gz?rlkey=6lrumo6jrt552om93arvcrpvq&st=jvh3vtwl&dl=1
+    JAVA8_WINDOWS_URL: https://www.dropbox.com/scl/fi/44tygsdp78i9p4k7ib9il/jre8_windows.zip?rlkey=gerlec8z50q2s9w1oolc0kroy&st=viw3wjsz&dl=1
+    JAVA8_MACOS_URL: https://www.dropbox.com/scl/fi/b9z366ueaynavmfmbg4vm/jre8_macos.tar.gz?rlkey=vpe33f2eo2xp5dw7qec39zaer&st=ejpc0679&dl=1
+    JAVA8_LINUX_URL: https://www.dropbox.com/scl/fi/rfs129gej4y3faygkiwc2/jre8_linux.tar.gz?rlkey=poa05blnpsnainayxjwzio3i8&st=xiig9mt2&dl=1
     
-    JAVA23_WINDOWS_URL: https://www.dropbox.com/scl/fi/80ja48hi5bormy3p3932j/jre23_windows.zip?rlkey=fgd4pxmdfyi8au8u66836wuiw&st=kauuxoja&dl=1
-    JAVA23_MACOS_URL: https://www.dropbox.com/scl/fi/eq6m0f8xg5zpgp6e3hng5/jre23_macos.tar.gz?rlkey=a65de268716wbp6r5r2frm0iq&st=rnb53t69&dl=1
-    JAVA23_LINUX_URL: https://www.dropbox.com/scl/fi/6sia78txwm8t0a11uuqhh/jre23_linux.tar.gz?rlkey=hkb93xa6hua43kz05edck6aq2&st=i2h7mvw6&dl=1
+    JAVA23_WINDOWS_URL: https://www.dropbox.com/scl/fi/j7k6ter2cd3428148dwos/jre23_windows.zip?rlkey=l9noke6tgbsiv4vbmhxrjif5u&st=kj6dxi75&dl=1
+    JAVA23_MACOS_URL: https://www.dropbox.com/scl/fi/krduirulh2j9vglyyb4oi/jre23_macos.tar.gz?rlkey=0cts3eqmpgdme9mxxmri34x7c&st=jmvwem5u&dl=1
+    JAVA23_LINUX_URL: https://www.dropbox.com/scl/fi/5ygp7f8rj4wloes4q818d/jre23_linux.tar.gz?rlkey=jmpfvvn3cyhsuzsu4xr127ww3&st=1qlrh16h&dl=1
 
 jobs:
     build-jar:
