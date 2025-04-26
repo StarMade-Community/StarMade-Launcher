@@ -123,6 +123,12 @@ jobs:
                 shell: pwsh
                 run: |
                     Compress-Archive -Path native-packages\windows\package\* -DestinationPath native-packages\StarMade-Launcher-Windows.zip -Force
+        
+            -   name: Upload Windows package
+                uses: actions/upload-artifact@v4
+                with:
+                    name: starmade-launcher-windows
+                    path: native-packages/StarMade-Launcher-Windows.zip
     
     package-macos:
         name: Package for MacOS
@@ -216,7 +222,7 @@ jobs:
                     cd native-packages/macos
                     zip -r ../StarMade-Launcher-MacOS.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command
             
-            -   name: Upload macOS package
+            -   name: Upload MacOS package
                 uses: actions/upload-artifact@v4
                 with:
                     name: starmade-launcher-macos
