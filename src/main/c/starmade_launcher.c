@@ -61,8 +61,8 @@
     #define JAVA8_RELATIVE_PATH "/jre8/Contents/Home/bin/java"
     #define JAVA23_RELATIVE_PATH "/jre23/Contents/Home/bin/java"
 #else
-    #define JAVA8_RELATIVE_PATH "/jre8/bin/java"
-    #define JAVA23_RELATIVE_PATH "/jre23/bin/java"
+    #define JAVA8_RELATIVE_PATH "/jre8/java"
+    #define JAVA23_RELATIVE_PATH "/jre23/java"
 #endif
 
 // Function declarations
