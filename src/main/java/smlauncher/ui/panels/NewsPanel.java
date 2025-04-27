@@ -1,4 +1,4 @@
-package smlauncher.news;
+package smlauncher.ui.panels;
 
 import smlauncher.util.BBCodeToHTMLConverter;
 import smlauncher.util.Palette;
@@ -16,11 +16,11 @@ import java.util.ArrayList;
  *
  * @author TheDerpGamer
  */
-public class LauncherNewsPanel extends JPanel {
+public class NewsPanel extends JPanel implements UIElement {
 
 	public static final boolean PRINT_HTML_MESSAGES = false;
 
-	public LauncherNewsPanel() {
+	public NewsPanel() {
 		super(true);
 		setBackground(Palette.paneColor);
 		setOpaque(true);
@@ -54,5 +54,15 @@ public class LauncherNewsPanel extends JPanel {
 		htmlPanel.setText(sb.toString());
 		add(htmlPanel, BorderLayout.CENTER);
 		revalidate();
+	}
+
+	@Override
+	public void initialize() {
+		
+	}
+
+	@Override
+	public void registerListeners() {
+
 	}
 }

@@ -1,7 +1,5 @@
 package smlauncher.util;
 
-import smlauncher.news.LauncherNewsPanel;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
