@@ -37,7 +37,7 @@ public class NewsPanel extends JPanel implements UIElement {
 		StringBuilder sb = new StringBuilder();
 		for(SteamNewsAPI.NewsPost post : SteamNewsAPI.getPosts()) {
 			ArrayList<String> lines = BBCodeToHTMLConverter.convert(post.getContents());
-			lines.add(0, "<h1>" + post.getTitle() + "</h1>");
+			lines.addFirst("<h1>" + post.getTitle() + "</h1>");
 			LocalDate ldt = Instant.ofEpochMilli(post.getDate() * 1000L).atZone(ZoneId.systemDefault()).toLocalDate();
 			lines.add("<p><a href=\"" + post.getUrl() + "\">Posted on " + ldt.toString() + " by " + post.getAuthor() + "</a></p>");
 			lines = BBCodeToHTMLConverter.insertColors(lines, "#eeeeee");
@@ -45,7 +45,7 @@ public class NewsPanel extends JPanel implements UIElement {
 
 			for(String line : lines) {
 				sb.append(line);
-				if (PRINT_HTML_MESSAGES) {
+				if(PRINT_HTML_MESSAGES) {
 					System.out.println(line);
 				}
 			}
@@ -58,7 +58,7 @@ public class NewsPanel extends JPanel implements UIElement {
 
 	@Override
 	public void initialize() {
-		
+
 	}
 
 	@Override
