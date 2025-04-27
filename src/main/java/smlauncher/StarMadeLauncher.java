@@ -97,7 +97,7 @@ public class StarMadeLauncher extends JFrame {
 		LogManager.initialize();
 
 		// Read game version and branch
-		
+
 		gameVersion = getLastUsedVersion();
 		setGameVersion(gameVersion);
 		setBranch(gameVersion.branch);
@@ -794,7 +794,12 @@ public class StarMadeLauncher extends JFrame {
 //			northPanel.setBackground(Palette.paneColor);
 //			northPanel.setForeground(Palette.foregroundColor);
 			dialogPanel.add(northPanel, BorderLayout.NORTH);
-			JSlider slider = new JSlider(SwingConstants.HORIZONTAL, 2048, (int) getSystemMemory(), LaunchSettings.getMemory());
+			// Get system memory and ensure it's at least the minimum value
+			long systemMemory = Math.max(getSystemMemory(), 2048);
+			// Get current memory setting and ensure it's within valid range
+			int currentMemory = Math.min(Math.max(LaunchSettings.getMemory(), 2048), (int) systemMemory);
+			// Create slider with valid values
+			JSlider slider = new JSlider(SwingConstants.HORIZONTAL, 2048, (int) systemMemory, currentMemory);
 //			slider.setBackground(Palette.paneColor);
 			JLabel sliderLabel = new JLabel("Memory: " + slider.getValue() + " MB");
 //			sliderLabel.setBackground(Palette.paneColor);
@@ -1174,7 +1179,7 @@ public class StarMadeLauncher extends JFrame {
 			LogManager.logFatal("Failed to start StarMade", exception);
 		}
 	}
-	
+
 	public boolean checkNeedsUpdate() {
 		return !gameJarExists(LaunchSettings.getInstallDir()) || gameVersion == null || (!Objects.equals(gameVersion.version, selectedVersion) && selectedVersion != null);
 	}
