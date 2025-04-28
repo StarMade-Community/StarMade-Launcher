@@ -409,9 +409,9 @@ public class StarMadeLauncher extends JFrame {
 
 	private static String getJavaPath() {
 		if(gameVersion.version.startsWith("0.2") || gameVersion.version.startsWith("0.1")) {
-			return String.format(currentOS.javaPath, 8);
+			return (new File(String.format(currentOS.javaPath, 8))).getAbsolutePath();
 		} else {
-			return String.format(currentOS.javaPath, 23);
+			return (new File(String.format(currentOS.javaPath, 23))).getAbsolutePath();
 		}
 	}
 
