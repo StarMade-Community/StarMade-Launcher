@@ -208,12 +208,8 @@ int build_command_line(char *cmd_line, size_t cmd_line_size, const char *java_pa
                       const char *jar_path, int argc, char *argv[]) {
     size_t offset = 0;
 
-    #ifdef _WIN32
-        // On Windows, we need to quote paths with spaces
-        offset += snprintf(cmd_line + offset, cmd_line_size - offset, "\"%s\" ", java_path);
-    #else
-        offset += snprintf(cmd_line + offset, cmd_line_size - offset, "%s ", java_path);
-    #endif
+    // Quote the Java path for all platforms
+    offset += snprintf(cmd_line + offset, cmd_line_size - offset, "\"%s\" ", java_path);
 
     // Add platform-specific Java args
     #ifdef __APPLE__
@@ -226,16 +222,17 @@ int build_command_line(char *cmd_line, size_t cmd_line_size, const char *java_pa
                          "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED ");
     }
 
-    // Add JAR argument
-    #ifdef _WIN32
-        offset += snprintf(cmd_line + offset, cmd_line_size - offset, "-jar \"%s\" ", jar_path);
-    #else
-        offset += snprintf(cmd_line + offset, cmd_line_size - offset, "-jar %s ", jar_path);
-    #endif
+    // Add JAR argument - quote for all platforms
+    offset += snprintf(cmd_line + offset, cmd_line_size - offset, "-jar \"%s\" ", jar_path);
 
     // Add any additional arguments passed to the launcher
     for (int i = 1; i < argc; i++) {
-        offset += snprintf(cmd_line + offset, cmd_line_size - offset, "%s ", argv[i]);
+        // Quote arguments that contain spaces
+        if (strchr(argv[i], ' ') != NULL) {
+            offset += snprintf(cmd_line + offset, cmd_line_size - offset, "\"%s\" ", argv[i]);
+        } else {
+            offset += snprintf(cmd_line + offset, cmd_line_size - offset, "%s ", argv[i]);
+        }
     }
 
     return (offset > 0 && offset < cmd_line_size);
@@ -273,9 +270,11 @@ int launch_process(const char *cmd_line, const char *working_dir) {
 
         return 1;
     #else
-        // Unix implementation - using system()
-        // Not ideal but simpler than implementing fork/exec
-        int result = system(cmd_line);
+        // Unix implementation
+        char cd_command[MAX_CMD_LENGTH * 2];
+        // Change to working directory first, then execute command
+        snprintf(cd_command, sizeof(cd_command), "cd \"%s\" && %s", working_dir, cmd_line);
+        int result = system(cd_command);
         return (result != -1);
     #endif
 }
