@@ -486,6 +486,8 @@ public class StarMadeLauncher extends JFrame {
 		if(currentOS == OperatingSystem.LINUX) {
 			// Override (meaningless?) default library path
 			commandComponents.add("-Djava.library.path=lib:native/linux");
+			// __GL_THREADED_OPTIMIZATIONS=0
+			commandComponents.add("-D__GL_THREADED_OPTIMIZATIONS=0");
 		}
 
 		commandComponents.add("-jar");
