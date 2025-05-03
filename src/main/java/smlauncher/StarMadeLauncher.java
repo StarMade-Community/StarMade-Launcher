@@ -125,6 +125,8 @@ public class StarMadeLauncher extends JFrame {
 		boolean selectVersion = false;
 		boolean autoUpdate = true;
 
+		System.setProperty("sun.java2d.uiScale.enabled", "true");
+
 		if(args == null || args.length == 0) startup();
 		else {
 			GameBranch buildBranch = GameBranch.RELEASE;
