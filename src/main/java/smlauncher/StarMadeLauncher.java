@@ -488,6 +488,8 @@ public class StarMadeLauncher extends JFrame {
 			commandComponents.add("-Djava.library.path=lib:native/linux");
 			// __GL_THREADED_OPTIMIZATIONS=0
 			commandComponents.add("-D__GL_THREADED_OPTIMIZATIONS=0");
+			//GDK_BACKEND=x11
+			commandComponents.add("-DGDK_BACKEND=x11");
 		}
 
 		commandComponents.add("-jar");
