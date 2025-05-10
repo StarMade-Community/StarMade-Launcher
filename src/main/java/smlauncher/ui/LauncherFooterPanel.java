@@ -1,6 +1,5 @@
 package smlauncher.ui;
 
-import smlauncher.LaunchSettings;
 import smlauncher.StarMadeLauncher;
 import smlauncher.starmade.StackLayout;
 import smlauncher.util.Palette;

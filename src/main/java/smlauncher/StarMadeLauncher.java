@@ -6,14 +6,13 @@ import oshi.hardware.HardwareAbstractionLayer;
 import smlauncher.community.LauncherCommunityPanel;
 import smlauncher.fileio.TextFileUtil;
 import smlauncher.news.LauncherNewsPanel;
-import smlauncher.starmade.*;
+import smlauncher.starmade.GameBranch;
+import smlauncher.starmade.GameUpdater;
+import smlauncher.starmade.IndexFileEntry;
+import smlauncher.starmade.StarMadeCredentials;
 import smlauncher.ui.LauncherFooterPanel;
 import smlauncher.ui.LauncherHeaderPanel;
 import smlauncher.ui.LauncherNavigationPanel;
-import smlauncher.ui.LauncherPlayPanel;
-import smlauncher.ui.LauncherServerPanel;
-import smlauncher.ui.LauncherVersionPanel;
-import smlauncher.ui.NavigationHandler;
 import smlauncher.util.OperatingSystem;
 import smlauncher.util.Palette;
 
@@ -22,7 +21,10 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -557,23 +559,20 @@ public class StarMadeLauncher extends JFrame {
 		mainPanel.add(headerPanel, BorderLayout.NORTH);
 
 		// Create navigation panel
-		LauncherNavigationPanel navigationPanel = new LauncherNavigationPanel(this, new NavigationHandler() {
-			@Override
-			public void onNavigate(int index) {
-				switch(index) {
-					case 0:
-						createNewsPanel();
-						break;
-					case 1:
-						createForumsPanel();
-						break;
-					case 2:
-						createContentPanel();
-						break;
-					case 3:
-						createCommunityPanel();
-						break;
-				}
+		LauncherNavigationPanel navigationPanel = new LauncherNavigationPanel(this, index -> {
+			switch(index) {
+				case 0:
+					createNewsPanel();
+					break;
+				case 1:
+					createForumsPanel();
+					break;
+				case 2:
+					createContentPanel();
+					break;
+				case 3:
+					createCommunityPanel();
+					break;
 			}
 		});
 		mainPanel.add(navigationPanel, BorderLayout.WEST);
@@ -583,15 +582,12 @@ public class StarMadeLauncher extends JFrame {
 		mainPanel.add(footerPanel, BorderLayout.SOUTH);
 
 		// Set up mode change listener
-		((LauncherFooterPanel) footerPanel).setModeChangeListener(new LauncherFooterPanel.ModeChangeListener() {
-			@Override
-			public void onModeChange(boolean isServerMode) {
-				serverMode = isServerMode;
-				if (isServerMode) {
-					createServerPanel(footerPanel);
-				} else {
-					createPlayPanel(footerPanel);
-				}
+		((LauncherFooterPanel) footerPanel).setModeChangeListener(isServerMode -> {
+			serverMode = isServerMode;
+			if(isServerMode) {
+				createServerPanel(footerPanel);
+			} else {
+				createPlayPanel(footerPanel);
 			}
 		});
 
@@ -889,7 +885,7 @@ public class StarMadeLauncher extends JFrame {
 	}
 
 	private void switchToClientMode() {
-		if (footerPanel instanceof LauncherFooterPanel) {
+		if(footerPanel instanceof LauncherFooterPanel) {
 			((LauncherFooterPanel) footerPanel).switchToClientMode();
 		}
 		serverPanel.setVisible(false);
@@ -898,14 +894,14 @@ public class StarMadeLauncher extends JFrame {
 	}
 
 	private void switchToServerMode() {
-		if (footerPanel instanceof LauncherFooterPanel) {
+		if(footerPanel instanceof LauncherFooterPanel) {
 			((LauncherFooterPanel) footerPanel).switchToServerMode();
 		}
 		versionPanel.setVisible(false);
-		if (playPanelButtons != null) {
+		if(playPanelButtons != null) {
 			playPanelButtons.removeAll();
 		}
-		if (versionPanel != null) {
+		if(versionPanel != null) {
 			versionPanel.removeAll();
 		}
 		createServerPanel(footerPanel);
