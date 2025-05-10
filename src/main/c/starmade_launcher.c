@@ -156,8 +156,16 @@ int file_exists(const char *path) {
 
 // Function to get the executable path
 void get_executable_path(char *buffer, size_t buffer_size) {
+    if (buffer == NULL || buffer_size == 0) {
+        return;
+    }
+
+    // Ensure the buffer is always null-terminated
+    buffer[buffer_size - 1] = '\0';
+
     #ifdef _WIN32
         GetModuleFileNameA(NULL, buffer, (DWORD)buffer_size);
+        buffer[buffer_size - 1] = '\0'; // Ensure null-termination
         PathRemoveFileSpecA(buffer);
     #elif defined(__APPLE__)
         CFBundleRef mainBundle = CFBundleGetMainBundle();
@@ -168,13 +176,21 @@ void get_executable_path(char *buffer, size_t buffer_size) {
                 if (resourcesURL) {
                     if (CFURLGetFileSystemRepresentation(resourcesURL, true, (UInt8 *)buffer, buffer_size)) {
                         // Path now points to Resources/ directory
+                        buffer[buffer_size - 1] = '\0'; // Ensure null-termination
                     } else {
                         // Fallback to executable path
                         char temp[PATH_MAX];
                         uint32_t size = sizeof(temp);
-                        _NSGetExecutablePath(temp, &size);
-                        char *dir = dirname(temp);
-                        strncpy(buffer, dir, buffer_size);
+                        if (_NSGetExecutablePath(temp, &size) == 0) {
+                            temp[sizeof(temp) - 1] = '\0'; // Ensure null-termination
+                            char *dir = dirname(temp);
+                            strncpy(buffer, dir, buffer_size - 1);
+                            buffer[buffer_size - 1] = '\0'; // Ensure null-termination
+                        } else {
+                            // If _NSGetExecutablePath fails, use current directory
+                            getcwd(buffer, buffer_size);
+                            buffer[buffer_size - 1] = '\0'; // Ensure null-termination
+                        }
                     }
                     CFRelease(resourcesURL);
                 }
@@ -184,21 +200,30 @@ void get_executable_path(char *buffer, size_t buffer_size) {
             // Not running from a bundle, use executable path
             char temp[PATH_MAX];
             uint32_t size = sizeof(temp);
-            _NSGetExecutablePath(temp, &size);
-            char *dir = dirname(temp);
-            strncpy(buffer, dir, buffer_size);
+            if (_NSGetExecutablePath(temp, &size) == 0) {
+                temp[sizeof(temp) - 1] = '\0'; // Ensure null-termination
+                char *dir = dirname(temp);
+                strncpy(buffer, dir, buffer_size - 1);
+                buffer[buffer_size - 1] = '\0'; // Ensure null-termination
+            } else {
+                // If _NSGetExecutablePath fails, use current directory
+                getcwd(buffer, buffer_size);
+                buffer[buffer_size - 1] = '\0'; // Ensure null-termination
+            }
         }
     #else
         // Linux implementation
         char temp[PATH_MAX];
-        ssize_t count = readlink("/proc/self/exe", temp, PATH_MAX);
+        ssize_t count = readlink("/proc/self/exe", temp, PATH_MAX - 1);
         if (count != -1) {
-            temp[count] = '\0';
+            temp[count] = '\0'; // Ensure null-termination
             char *dir = dirname(temp);
-            strncpy(buffer, dir, buffer_size);
+            strncpy(buffer, dir, buffer_size - 1);
+            buffer[buffer_size - 1] = '\0'; // Ensure null-termination
         } else {
             // Fallback
             getcwd(buffer, buffer_size);
+            buffer[buffer_size - 1] = '\0'; // Ensure null-termination
         }
     #endif
 }
@@ -207,32 +232,53 @@ void get_executable_path(char *buffer, size_t buffer_size) {
 int build_command_line(char *cmd_line, size_t cmd_line_size, const char *java_path,
                       const char *jar_path, int argc, char *argv[]) {
     size_t offset = 0;
+    int result;
 
     // Quote the Java path for all platforms
-    offset += snprintf(cmd_line + offset, cmd_line_size - offset, "\"%s\" ", java_path);
+    result = snprintf(cmd_line + offset, cmd_line_size - offset, "\"%s\" ", java_path);
+    if (result < 0 || (size_t)result >= cmd_line_size - offset) {
+        return 0; // Error or buffer too small
+    }
+    offset += result;
 
     // Add platform-specific Java args
     #ifdef __APPLE__
-        offset += snprintf(cmd_line + offset, cmd_line_size - offset, "-XstartOnFirstThread ");
+        result = snprintf(cmd_line + offset, cmd_line_size - offset, "-XstartOnFirstThread ");
+        if (result < 0 || (size_t)result >= cmd_line_size - offset) {
+            return 0; // Error or buffer too small
+        }
+        offset += result;
     #endif
 
     // Check if it's Java 23 (simple check for "23" in the path)
     if (strstr(java_path, "23") != NULL) {
-        offset += snprintf(cmd_line + offset, cmd_line_size - offset,
+        result = snprintf(cmd_line + offset, cmd_line_size - offset,
                          "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED ");
+        if (result < 0 || (size_t)result >= cmd_line_size - offset) {
+            return 0; // Error or buffer too small
+        }
+        offset += result;
     }
 
     // Add JAR argument - quote for all platforms
-    offset += snprintf(cmd_line + offset, cmd_line_size - offset, "-jar \"%s\" ", jar_path);
+    result = snprintf(cmd_line + offset, cmd_line_size - offset, "-jar \"%s\" ", jar_path);
+    if (result < 0 || (size_t)result >= cmd_line_size - offset) {
+        return 0; // Error or buffer too small
+    }
+    offset += result;
 
     // Add any additional arguments passed to the launcher
     for (int i = 1; i < argc; i++) {
         // Quote arguments that contain spaces
         if (strchr(argv[i], ' ') != NULL) {
-            offset += snprintf(cmd_line + offset, cmd_line_size - offset, "\"%s\" ", argv[i]);
+            result = snprintf(cmd_line + offset, cmd_line_size - offset, "\"%s\" ", argv[i]);
         } else {
-            offset += snprintf(cmd_line + offset, cmd_line_size - offset, "%s ", argv[i]);
+            result = snprintf(cmd_line + offset, cmd_line_size - offset, "%s ", argv[i]);
         }
+        if (result < 0 || (size_t)result >= cmd_line_size - offset) {
+            return 0; // Error or buffer too small
+        }
+        offset += result;
     }
 
     return (offset > 0 && offset < cmd_line_size);
@@ -271,10 +317,22 @@ int launch_process(const char *cmd_line, const char *working_dir) {
         return 1;
     #else
         // Unix implementation
-        char cd_command[MAX_CMD_LENGTH * 2];
+        size_t required_size = strlen(working_dir) + strlen(cmd_line) + 10; // 10 for "cd "" && " and null terminator
+        if (required_size > MAX_CMD_LENGTH * 2) {
+            fprintf(stderr, "Command line too long\n");
+            return 0;
+        }
+
+        char *cd_command = (char *)malloc(required_size);
+        if (cd_command == NULL) {
+            fprintf(stderr, "Failed to allocate memory for command\n");
+            return 0;
+        }
+
         // Change to working directory first, then execute command
-        snprintf(cd_command, sizeof(cd_command), "cd \"%s\" && %s", working_dir, cmd_line);
+        snprintf(cd_command, required_size, "cd \"%s\" && %s", working_dir, cmd_line);
         int result = system(cd_command);
+        free(cd_command);
         return (result != -1);
     #endif
 }
@@ -285,6 +343,13 @@ void show_error_message(const char *message) {
         MessageBoxA(NULL, message, "StarMade Launcher Error", MB_ICONERROR | MB_OK);
     #elif defined(__APPLE__)
         // Create an AppleScript command to display a dialog
+        size_t required_size = strlen(message) + 150; // 150 for the AppleScript command and null terminator
+        if (required_size > MAX_CMD_LENGTH + 100) {
+            fprintf(stderr, "Error message too long\n");
+            fprintf(stderr, "ERROR: %s\n", message);
+            return;
+        }
+
         char cmd[MAX_CMD_LENGTH + 100];
         snprintf(cmd, sizeof(cmd),
                 "osascript -e 'display dialog \"%s\" buttons {\"OK\"} "
@@ -293,6 +358,13 @@ void show_error_message(const char *message) {
         system(cmd);
     #else
         // Try graphical tools first, fallback to console
+        size_t required_size = strlen(message) + 100; // 100 for the command and null terminator
+        if (required_size > MAX_CMD_LENGTH + 100) {
+            fprintf(stderr, "Error message too long\n");
+            fprintf(stderr, "ERROR: %s\n", message);
+            return;
+        }
+
         char cmd[MAX_CMD_LENGTH + 100];
 
         // Try zenity first

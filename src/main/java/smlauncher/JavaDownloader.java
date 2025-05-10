@@ -63,7 +63,6 @@ public class JavaDownloader {
 		}
 	}
 
-
 	public void download() throws IOException {
 		String url = getJavaURL();
 

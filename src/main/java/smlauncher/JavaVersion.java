@@ -19,7 +19,7 @@ public enum JavaVersion {
 		this.fileStart = fileStart;
 		this.fmtURL = fmtURL;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "Java " + number;

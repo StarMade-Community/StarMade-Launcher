@@ -17,7 +17,7 @@ public final class LaunchSettings {
 
 	private static final String SETTINGS_FILENAME = "launch-settings.json";
 	private static JSONObject launchSettings;
-	
+
 	// Settings File Methods
 
 	public static void readSettings() {
@@ -111,5 +111,4 @@ public final class LaunchSettings {
 	public static void setMemory(int memory) {
 		launchSettings.put("memory", memory);
 	}
-
 }

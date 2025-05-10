@@ -21,8 +21,8 @@ public class LogManager {
 
 	private static final int STACKTRACE_LIMIT = 10;
 	private static final Logger log = LoggerFactory.getLogger(LogManager.class);
-	private static FileWriter logWriter ;
 	public static File logFile;
+	private static FileWriter logWriter;
 
 	public static void initialize() {
 		try {
@@ -90,7 +90,7 @@ public class LogManager {
 					break;
 				}
 				logWriter.append("\t").append(element.toString()).append("\n");
-				i ++;
+				i++;
 			}
 			logWriter.flush();
 		} catch(Exception e) {
@@ -111,7 +111,7 @@ public class LogManager {
 					break;
 				}
 				logWriter.append("\t").append(element.toString()).append("\n");
-				i ++;
+				i++;
 			}
 			logWriter.flush();
 			(new ErrorDialog("Error", message, exception, false)).setVisible(true);
@@ -133,7 +133,7 @@ public class LogManager {
 					break;
 				}
 				logWriter.append("\t").append(element.toString()).append("\n");
-				i ++;
+				i++;
 			}
 			logWriter.flush();
 			(new ErrorDialog("Fatal Error", message, exception, true)).setVisible(true);

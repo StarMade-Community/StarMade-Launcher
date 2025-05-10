@@ -2,7 +2,6 @@ package smlauncher.starmade;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import smlauncher.LogManager;
-import smlauncher.StarMadeLauncher;
 import smlauncher.util.OperatingSystem;
 
 import javax.swing.*;
@@ -23,12 +22,10 @@ public class GameUpdater extends Observable {
 	public static final int BACK_NONE = 0;
 	public static final int BACK_DB = 1;
 	public static final int BACK_ALL = 2;
-	public static String FILES_URL = "http://files.star-made.org/";
-	public static String MIRROR_SITE = "http://files.star-made.org/mirrors";
-
 	public static final boolean PRINT_ALL_DOWNLOADS = false;
 	public static final boolean PRINT_DOWNLOAD_MILESTONES = true;
-
+	public static String FILES_URL = "http://files.star-made.org/";
+	public static String MIRROR_SITE = "http://files.star-made.org/mirrors";
 	public final ArrayList<IndexFileEntry> versions = new ArrayList<>();
 	private final ArrayList<String> mirrorURLs = new ArrayList<>();
 	private final StarMadeBackupTool backup = new StarMadeBackupTool();
@@ -110,6 +107,19 @@ public class GameUpdater extends Observable {
 		} else {
 			return "java";
 		}
+	}
+
+	public static ChecksumFile getChecksums(String relPath) throws IOException {
+		URL urlVersion = new URL(relPath + "/checksums");
+		URLConnection openConnection = urlVersion.openConnection();
+		openConnection.setRequestProperty("User-Agent", "StarMade-Updater");
+		openConnection.setConnectTimeout(10000);
+		openConnection.setReadTimeout(10000);
+		BufferedReader in = new BufferedReader(new InputStreamReader(new BufferedInputStream(openConnection.getInputStream()), StandardCharsets.UTF_8));
+		ChecksumFile f = new ChecksumFile();
+		f.parse(in);
+		in.close();
+		return f;
 	}
 
 	@Override
@@ -421,19 +431,6 @@ public class GameUpdater extends Observable {
 		in.close();
 		e.text = b.toString();
 		return e;
-	}
-
-	public static ChecksumFile getChecksums(String relPath) throws IOException {
-		URL urlVersion = new URL(relPath + "/checksums");
-		URLConnection openConnection = urlVersion.openConnection();
-		openConnection.setRequestProperty("User-Agent", "StarMade-Updater");
-		openConnection.setConnectTimeout(10000);
-		openConnection.setReadTimeout(10000);
-		BufferedReader in = new BufferedReader(new InputStreamReader(new BufferedInputStream(openConnection.getInputStream()), StandardCharsets.UTF_8));
-		ChecksumFile f = new ChecksumFile();
-		f.parse(in);
-		in.close();
-		return f;
 	}
 
 }

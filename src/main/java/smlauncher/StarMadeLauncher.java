@@ -7,6 +7,13 @@ import smlauncher.community.LauncherCommunityPanel;
 import smlauncher.fileio.TextFileUtil;
 import smlauncher.news.LauncherNewsPanel;
 import smlauncher.starmade.*;
+import smlauncher.ui.LauncherFooterPanel;
+import smlauncher.ui.LauncherHeaderPanel;
+import smlauncher.ui.LauncherNavigationPanel;
+import smlauncher.ui.LauncherPlayPanel;
+import smlauncher.ui.LauncherServerPanel;
+import smlauncher.ui.LauncherVersionPanel;
+import smlauncher.ui.NavigationHandler;
 import smlauncher.util.OperatingSystem;
 import smlauncher.util.Palette;
 
@@ -36,6 +43,7 @@ import java.util.Objects;
  */
 public class StarMadeLauncher extends JFrame {
 
+	public static final String LAUNCHER_VERSION = "3.0.9";
 	public static final String BUG_REPORT_URL = "https://github.com/StarMade-Community/StarMade-Launcher/issues";
 	private static final String J23ARGS = "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED";
 	private static IndexFileEntry gameVersion;
@@ -46,11 +54,9 @@ public class StarMadeLauncher extends JFrame {
 	private static int port;
 	private static OperatingSystem currentOS;
 	private static JTextField portField;
+	private static UpdaterThread updaterThread;
 	private final VersionRegistry versionRegistry;
 	private final DownloadStatus dlStatus = new DownloadStatus();
-	private static UpdaterThread updaterThread;
-	private int mouseX;
-	private int mouseY;
 	private JButton updateButton;
 	private JPanel mainPanel;
 	private JPanel centerPanel;
@@ -425,34 +431,6 @@ public class StarMadeLauncher extends JFrame {
 		}
 	}
 
-	private void downloadJRE() throws Exception {
-		if(new File(getJavaPath()).exists()) return;
-		downloader = new JavaDownloader(getJavaVersion());
-		JDialog dialog = new JDialog();
-		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		dialog.setModal(true);
-		dialog.setResizable(false);
-		dialog.setTitle("Performing First Time Setup");
-		dialog.setSize(500, 100);
-		dialog.setLocationRelativeTo(null);
-		dialog.setLayout(new BorderLayout());
-
-		JPanel dialogPanel = new JPanel();
-		dialogPanel.setDoubleBuffered(true);
-		dialogPanel.setOpaque(true);
-		dialogPanel.setLayout(new BorderLayout());
-		dialog.add(dialogPanel);
-
-		JLabel downloadLabel = new JLabel("Downloading Java " + getJavaVersion().number + "...");
-		downloadLabel.setDoubleBuffered(true);
-		downloadLabel.setOpaque(true);
-		downloadLabel.setFont(new Font("Roboto", Font.BOLD, 16));
-		downloadLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		dialogPanel.add(downloadLabel, BorderLayout.CENTER);
-
-		downloader.downloadAndUnzip(dialog);
-	}
-
 	private static void setClientProperties(JComboBox<String> dropdown, UIDefaults defaults) {
 		dropdown.putClientProperty("Nimbus.Overrides", defaults);
 		dropdown.putClientProperty("Nimbus.Overrides.InheritDefaults", true);
@@ -518,6 +496,34 @@ public class StarMadeLauncher extends JFrame {
 		return commandComponents;
 	}
 
+	private void downloadJRE() throws Exception {
+		if(new File(getJavaPath()).exists()) return;
+		downloader = new JavaDownloader(getJavaVersion());
+		JDialog dialog = new JDialog();
+		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		dialog.setModal(true);
+		dialog.setResizable(false);
+		dialog.setTitle("Performing First Time Setup");
+		dialog.setSize(500, 100);
+		dialog.setLocationRelativeTo(null);
+		dialog.setLayout(new BorderLayout());
+
+		JPanel dialogPanel = new JPanel();
+		dialogPanel.setDoubleBuffered(true);
+		dialogPanel.setOpaque(true);
+		dialogPanel.setLayout(new BorderLayout());
+		dialog.add(dialogPanel);
+
+		JLabel downloadLabel = new JLabel("Downloading Java " + getJavaVersion().number + "...");
+		downloadLabel.setDoubleBuffered(true);
+		downloadLabel.setOpaque(true);
+		downloadLabel.setFont(new Font("Roboto", Font.BOLD, 16));
+		downloadLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		dialogPanel.add(downloadLabel, BorderLayout.CENTER);
+
+		downloader.downloadAndUnzip(dialog);
+	}
+
 	private IndexFileEntry getLastUsedVersion() {
 		try {
 			String version;
@@ -545,216 +551,64 @@ public class StarMadeLauncher extends JFrame {
 		mainPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
 		setContentPane(mainPanel);
 		mainPanel.setLayout(new BorderLayout(0, 0));
-		JPanel topPanel = new JPanel();
-		topPanel.setDoubleBuffered(true);
-		topPanel.setOpaque(false);
-		topPanel.setLayout(new StackLayout());
-		mainPanel.add(topPanel, BorderLayout.NORTH);
-		JLabel topLabel = new JLabel();
-		topLabel.setDoubleBuffered(true);
-		topLabel.setIcon(getIcon("sprites/header_top.png"));
-		topPanel.add(topLabel);
-		JPanel topPanelButtons = new JPanel();
-		topPanelButtons.setDoubleBuffered(true);
-		topPanelButtons.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		topPanelButtons.setOpaque(false);
-		JButton closeButton = new JButton(null, getIcon("sprites/close_icon.png")); //Todo: Replace these cus they look like shit
-		closeButton.setDoubleBuffered(true);
-		closeButton.setOpaque(false);
-		closeButton.setContentAreaFilled(false);
-		closeButton.setBorderPainted(false);
-		closeButton.addActionListener(e -> {
-			dispose();
-			System.exit(0);
-		});
-		JButton minimizeButton = new JButton(null, getIcon("sprites/minimize_icon.png"));
-		minimizeButton.setDoubleBuffered(true);
-		minimizeButton.setOpaque(false);
-		minimizeButton.setContentAreaFilled(false);
-		minimizeButton.setBorderPainted(false);
-		minimizeButton.addActionListener(e -> setState(ICONIFIED));
-		topPanelButtons.add(minimizeButton);
-		topPanelButtons.add(closeButton);
-		topLabel.add(topPanelButtons);
-		topPanelButtons.setBounds(0, 0, 800, 30);
-		//Use top panel to drag the window
-		topPanel.addMouseListener(new MouseAdapter() {
+
+		// Create header panel
+		LauncherHeaderPanel headerPanel = new LauncherHeaderPanel(this);
+		mainPanel.add(headerPanel, BorderLayout.NORTH);
+
+		// Create navigation panel
+		LauncherNavigationPanel navigationPanel = new LauncherNavigationPanel(this, new NavigationHandler() {
 			@Override
-			public void mousePressed(MouseEvent e) {
-				mouseX = e.getX();
-				mouseY = e.getY();
-				//If the mouse is on the top panel buttons, don't drag the window
-				if(mouseX > 770 || mouseY > 30) {
-					mouseX = 0;
-					mouseY = 0;
-				}
-				super.mousePressed(e);
-			}
-		});
-		topPanel.addMouseMotionListener(new MouseMotionAdapter() {
-			@Override
-			public void mouseDragged(MouseEvent e) {
-				if(mouseX != 0 && mouseY != 0) setLocation(getLocation().x + e.getX() - mouseX, getLocation().y + e.getY() - mouseY);
-				super.mouseDragged(e);
-			}
-		});
-		JPanel leftPanel = new JPanel();
-		leftPanel.setDoubleBuffered(true);
-		leftPanel.setOpaque(false);
-		leftPanel.setLayout(new StackLayout());
-		mainPanel.add(leftPanel, BorderLayout.WEST);
-		JLabel leftLabel = new JLabel();
-		leftLabel.setDoubleBuffered(true);
-		try {
-			Image image = ImageIO.read(Objects.requireNonNull(StarMadeLauncher.class.getResource("/sprites/left_panel.png")));
-			//Resize the image to the left panel
-			image = image.getScaledInstance(150, 500, Image.SCALE_SMOOTH);
-			leftLabel.setIcon(new ImageIcon(image));
-		} catch(IOException exception) {
-			LogManager.logWarning("Failed to load left panel image", exception);
-		}
-		//Stretch the image to the left panel
-		leftPanel.add(leftLabel, StackLayout.BOTTOM);
-		JPanel topLeftPanel = new JPanel();
-		topLeftPanel.setDoubleBuffered(true);
-		topLeftPanel.setOpaque(false);
-		topLeftPanel.setLayout(new BorderLayout());
-		leftPanel.add(topLeftPanel, StackLayout.TOP);
-		//Add list
-		JList<JLabel> list = new JList<>();
-		list.setDoubleBuffered(true);
-		list.setOpaque(false);
-		list.setLayoutOrientation(JList.VERTICAL);
-		list.setVisibleRowCount(-1);
-		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		list.setCellRenderer((list1, value, index, isSelected, cellHasFocus) -> {
-			if(isSelected) {
-				value.setForeground(Palette.selectedColor);
-				value.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, Palette.selectedColor));
-			} else {
-				value.setForeground(Palette.deselectedColor);
-				value.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, Palette.deselectedColor));
-			}
-			return value;
-		});
-		//Highlight on mouse hover
-		list.addMouseMotionListener(new MouseMotionAdapter() {
-			@Override
-			public void mouseMoved(MouseEvent e) {
-				int index = list.locationToIndex(e.getPoint());
-				if(index != -1) list.setSelectedIndex(index);
-				else list.clearSelection();
-			}
-		});
-		list.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if(e.getClickCount() == 1) {
-					int index = list.locationToIndex(e.getPoint());
-					if(index != -1) {
-						switch(index) {
-							case 0:
-								createNewsPanel();
-								break;
-							case 1:
-								createForumsPanel();
-								break;
-							case 2:
-								createContentPanel();
-								break;
-							case 3:
-								createCommunityPanel();
-								break;
-						}
-					}
+			public void onNavigate(int index) {
+				switch(index) {
+					case 0:
+						createNewsPanel();
+						break;
+					case 1:
+						createForumsPanel();
+						break;
+					case 2:
+						createContentPanel();
+						break;
+					case 3:
+						createCommunityPanel();
+						break;
 				}
 			}
 		});
-		list.setFixedCellHeight(48);
-		DefaultListModel<JLabel> listModel = new DefaultListModel<>();
-		listModel.addElement(new JLabel("NEWS"));
-		listModel.addElement(new JLabel("FORUMS"));
-		listModel.addElement(new JLabel("CONTENT"));
-		listModel.addElement(new JLabel("COMMUNITY"));
-		for(int i = 0; i < listModel.size(); i++) {
-			JLabel label = listModel.get(i);
-			label.setHorizontalAlignment(SwingConstants.CENTER);
-			label.setFont(new Font("Roboto", Font.BOLD, 18));
-			label.setForeground(Palette.selectedColor);
-			label.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, Palette.selectedColor));
-			label.setDoubleBuffered(true);
-			label.setOpaque(false);
-		}
-		list.setModel(listModel);
-		topLeftPanel.add(list);
-		JPanel topLeftLogoPanel = new JPanel();
-		topLeftLogoPanel.setDoubleBuffered(true);
-		topLeftLogoPanel.setOpaque(false);
-		topLeftLogoPanel.setLayout(new BorderLayout());
-		topLeftPanel.add(topLeftLogoPanel, BorderLayout.NORTH);
-		//Add a left inset
-		JPanel leftInset = new JPanel();
-		leftInset.setDoubleBuffered(true);
-		leftInset.setOpaque(false);
-		topLeftLogoPanel.add(leftInset, BorderLayout.CENTER);
-		//Add logo at top left
-		JLabel logo = new JLabel();
-		logo.setDoubleBuffered(true);
-		logo.setOpaque(false);
-		logo.setIcon(getIcon("sprites/logo.png"));
-		leftInset.add(logo);
-		footerPanel = new JPanel();
-		footerPanel.setDoubleBuffered(true);
-		footerPanel.setOpaque(false);
-		footerPanel.setLayout(new StackLayout());
+		mainPanel.add(navigationPanel, BorderLayout.WEST);
+
+		// Create footer panel
+		footerPanel = new LauncherFooterPanel(this);
 		mainPanel.add(footerPanel, BorderLayout.SOUTH);
-		JLabel footerLabel = new JLabel();
-		footerLabel.setDoubleBuffered(true);
-		footerLabel.setIcon(getIcon("sprites/footer_normalplay_bg.jpg"));
-		footerPanel.add(footerLabel);
-		JPanel topRightPanel = new JPanel();
-		topRightPanel.setDoubleBuffered(true);
-		topRightPanel.setOpaque(false);
-		topRightPanel.setLayout(new BorderLayout());
-		topPanel.add(topRightPanel, BorderLayout.EAST);
-		JLabel logoLabel = new JLabel();
-		logoLabel.setDoubleBuffered(true);
-		logoLabel.setOpaque(false);
-		logoLabel.setIcon(getIcon("sprites/launcher_schine_logo.png"));
-		topRightPanel.add(logoLabel, BorderLayout.EAST);
-		JButton normalPlayButton = new JButton("Play");
-		normalPlayButton.setFont(new Font("Roboto", Font.BOLD, 12));
-		normalPlayButton.setDoubleBuffered(true);
-		normalPlayButton.setOpaque(false);
-		normalPlayButton.setContentAreaFilled(false);
-		normalPlayButton.setBorderPainted(false);
-		normalPlayButton.setForeground(Palette.textColor);
-		JButton dedicatedServerButton = new JButton("Dedicated Server");
-		dedicatedServerButton.setFont(new Font("Roboto", Font.BOLD, 12));
-		dedicatedServerButton.setDoubleBuffered(true);
-		dedicatedServerButton.setOpaque(false);
-		dedicatedServerButton.setContentAreaFilled(false);
-		dedicatedServerButton.setBorderPainted(false);
-		dedicatedServerButton.setForeground(Palette.textColor);
-		JPanel footerPanelButtons = new JPanel();
-		footerPanelButtons.setDoubleBuffered(true);
-		footerPanelButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-		footerPanelButtons.setOpaque(false);
-		footerPanelButtons.add(Box.createRigidArea(new Dimension(10, 0)));
-		footerPanelButtons.add(normalPlayButton);
-		footerPanelButtons.add(Box.createRigidArea(new Dimension(30, 0)));
-		footerPanelButtons.add(dedicatedServerButton);
-		footerLabel.add(footerPanelButtons);
-		footerPanelButtons.setBounds(0, 0, 800, 30);
+
+		// Set up mode change listener
+		((LauncherFooterPanel) footerPanel).setModeChangeListener(new LauncherFooterPanel.ModeChangeListener() {
+			@Override
+			public void onModeChange(boolean isServerMode) {
+				serverMode = isServerMode;
+				if (isServerMode) {
+					createServerPanel(footerPanel);
+				} else {
+					createPlayPanel(footerPanel);
+				}
+			}
+		});
+
 		if(getLastUsedVersion() == null) selectedVersion = null;
 		else selectedVersion = gameVersion.version;
+
+		// Create initial panels
 		createPlayPanel(footerPanel);
 		createServerPanel(footerPanel);
+
+		// Create settings button
 		JPanel bottomPanel = new JPanel();
 		bottomPanel.setDoubleBuffered(true);
 		bottomPanel.setOpaque(false);
 		bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		footerPanel.add(bottomPanel, BorderLayout.SOUTH);
+
 		JButton launchSettings = new JButton("Launch Settings");
 		launchSettings.setIcon(getIcon("sprites/memory_options_gear.png"));
 		launchSettings.setFont(new Font("Roboto", Font.BOLD, 12));
@@ -1014,36 +868,6 @@ public class StarMadeLauncher extends JFrame {
 		if(serverPanel != null) serverPanel.setVisible(false);
 		versionPanel.setVisible(true);
 
-		normalPlayButton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				normalPlayButton.setForeground(Palette.selectedColor);
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-				normalPlayButton.setForeground(Palette.textColor);
-			}
-		});
-		normalPlayButton.addActionListener(e -> switchToClientMode(footerLabel));
-
-		dedicatedServerButton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				dedicatedServerButton.setForeground(Palette.selectedColor);
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-				dedicatedServerButton.setForeground(Palette.textColor);
-			}
-		});
-		dedicatedServerButton.addActionListener(e -> {
-			if(updaterThread == null || !updaterThread.updating) { //Don't allow this while the game is updating
-				switchToServerMode(footerLabel);
-			}
-		});
-
 		centerPanel = new JPanel();
 		centerPanel.setDoubleBuffered(true);
 		centerPanel.setOpaque(false);
@@ -1061,21 +885,29 @@ public class StarMadeLauncher extends JFrame {
 		}
 		centerPanel.add(background, BorderLayout.CENTER);
 
-		switchToClientMode(footerLabel); // make sure right components are visible
+		switchToClientMode(); // make sure right components are visible
 	}
 
-	private void switchToClientMode(JLabel footerLabel) {
-		footerLabel.setIcon(getIcon("sprites/footer_normalplay_bg.jpg"));
+	private void switchToClientMode() {
+		if (footerPanel instanceof LauncherFooterPanel) {
+			((LauncherFooterPanel) footerPanel).switchToClientMode();
+		}
 		serverPanel.setVisible(false);
 		versionPanel.setVisible(true);
 		createPlayPanel(footerPanel);
 	}
 
-	private void switchToServerMode(JLabel footerLabel) {
-		footerLabel.setIcon(getIcon("sprites/footer_dedicated_bg.jpg"));
+	private void switchToServerMode() {
+		if (footerPanel instanceof LauncherFooterPanel) {
+			((LauncherFooterPanel) footerPanel).switchToServerMode();
+		}
 		versionPanel.setVisible(false);
-		playPanelButtons.removeAll();
-		versionPanel.removeAll();
+		if (playPanelButtons != null) {
+			playPanelButtons.removeAll();
+		}
+		if (versionPanel != null) {
+			versionPanel.removeAll();
+		}
 		createServerPanel(footerPanel);
 		serverPanel.setVisible(true);
 	}
@@ -1349,7 +1181,7 @@ public class StarMadeLauncher extends JFrame {
 		}).start();
 	}
 
-	private void createScroller(JPanel currentPanel) {
+	public void createScroller(JPanel currentPanel) {
 		if(centerScrollPane == null) {
 			centerScrollPane = new JScrollPane(currentPanel);
 			centerScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -1361,7 +1193,7 @@ public class StarMadeLauncher extends JFrame {
 		centerScrollPane.setViewportView(currentPanel);
 	}
 
-	private void createNewsPanel() {
+	public void createNewsPanel() {
 		if(newsPanel == null) newsPanel = new LauncherNewsPanel();
 		createScroller(newsPanel);
 		newsPanel.updatePanel();
@@ -1371,7 +1203,7 @@ public class StarMadeLauncher extends JFrame {
 		});
 	}
 
-	private void createForumsPanel() {
+	public void createForumsPanel() {
 		if(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
 			String ccURL = "https://starmadedock.net/forums/";
 			try {
@@ -1391,7 +1223,7 @@ public class StarMadeLauncher extends JFrame {
 		 */
 	}
 
-	private void createContentPanel() {
+	public void createContentPanel() {
 		if(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
 			String ccURL = "https://starmadedock.net/content/";
 			try {
@@ -1411,7 +1243,7 @@ public class StarMadeLauncher extends JFrame {
 		 */
 	}
 
-	private void createCommunityPanel() {
+	public void createCommunityPanel() {
 		communityPanel = new LauncherCommunityPanel();
 		createScroller(communityPanel);
 		communityPanel.updatePanel();

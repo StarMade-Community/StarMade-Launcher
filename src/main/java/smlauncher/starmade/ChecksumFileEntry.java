@@ -19,6 +19,12 @@ public class ChecksumFileEntry {
 		this.relativePath = relativePath.replaceFirst("\\.", "");
 	}
 
+	private static void printUpdaterMessage(String message) {
+		if(GameUpdater.PRINT_ALL_DOWNLOADS) {
+			System.err.println("[UPDATER] " + message);
+		}
+	}
+
 	public boolean needsDownload(String buildPath, String installDirStr) throws IOException {
 		String sourceFilePath = buildPath + relativePath;
 		File dst = new File(installDirStr, relativePath);
@@ -151,12 +157,6 @@ public class ChecksumFileEntry {
 	public String toString() {
 		return "ChecksumFileEntry [size=" + size + ", checksum=" + checksum
 				+ ", relativePath=" + relativePath + ", index " + index + "]";
-	}
-
-	private static void printUpdaterMessage(String message) {
-		if (GameUpdater.PRINT_ALL_DOWNLOADS) {
-			System.err.println("[UPDATER] " + message);
-		}
 	}
 
 }

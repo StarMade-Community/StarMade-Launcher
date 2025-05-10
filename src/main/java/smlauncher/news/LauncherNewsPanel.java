@@ -45,7 +45,7 @@ public class LauncherNewsPanel extends JPanel {
 
 			for(String line : lines) {
 				sb.append(line);
-				if (PRINT_HTML_MESSAGES) {
+				if(PRINT_HTML_MESSAGES) {
 					System.out.println(line);
 				}
 			}

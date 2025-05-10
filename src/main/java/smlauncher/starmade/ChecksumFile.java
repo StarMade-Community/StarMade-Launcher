@@ -18,6 +18,12 @@ public class ChecksumFile {
 	int toExecute;
 	private int failed;
 
+	private static void printUpdaterMessage(String message) {
+		if(GameUpdater.PRINT_DOWNLOAD_MILESTONES) {
+			System.err.println("[UPDATER] " + message);
+		}
+	}
+
 	public void parse(BufferedReader in) throws IOException {
 		String line;
 
@@ -142,8 +148,8 @@ public class ChecksumFile {
 				toExecute--;
 			});
 
-			if (i == nextThreshold) {
-				int percent = (int) (100f * i / checksumsToDownload.size());
+			if(i == nextThreshold) {
+				int percent = (int) (100.0f * i / checksumsToDownload.size());
 				printUpdaterMessage("[UPDATER] Downloaded %d/%d files (%d%%)\n"
 						.formatted(i, checksumsToDownload.size(), percent));
 				nextThreshold += thresholdIncreaseAmount;
@@ -162,12 +168,6 @@ public class ChecksumFile {
 		}
 		pool.shutdown();
 		printUpdaterMessage("Downloaded all files");
-	}
-
-	private static void printUpdaterMessage(String message) {
-		if (GameUpdater.PRINT_DOWNLOAD_MILESTONES) {
-			System.err.println("[UPDATER] " + message);
-		}
 	}
 
 }
