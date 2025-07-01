@@ -45,7 +45,7 @@ import java.util.Objects;
  */
 public class StarMadeLauncher extends JFrame {
 
-	public static final String LAUNCHER_VERSION = "3.0.9";
+	public static final String LAUNCHER_VERSION = "3.3.10";
 	public static final String BUG_REPORT_URL = "https://github.com/StarMade-Community/StarMade-Launcher/issues";
 	private static final String J23ARGS = "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED";
 	private static IndexFileEntry gameVersion;
@@ -91,19 +91,18 @@ public class StarMadeLauncher extends JFrame {
 			LogManager.logException("Failed to set window icon", exception);
 		}
 
+		// Read launch settings
+		LaunchSettings.readSettings();
+		LogManager.initialize();
+
 		// Fetch game versions
 		versionRegistry = new VersionRegistry();
 		try {
 			versionRegistry.createRegistry();
 		} catch(Exception exception) {
 			LogManager.logException("Failed to fetch version list! Check your internet connection!", exception);
-			JOptionPane.showMessageDialog(this, "Failed to fetch version list! Check your internet connection!", "Warning", JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Failed to fetch version list due to no internet connection. Launcher will start in offline mode.", "Warning", JOptionPane.WARNING_MESSAGE);
 		}
-
-		// Read launch settings
-		LaunchSettings.readSettings();
-		LogManager.initialize();
-
 		// Read game version and branch
 
 		gameVersion = getLastUsedVersion();
