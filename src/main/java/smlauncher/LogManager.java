@@ -176,7 +176,7 @@ public class LogManager {
 			writer.append("\tError: ").append(error).append("\n");
 			writer.append("\tDescription: ").append(description).append("\n");
 			writer.append("\tException: ").append(exception.getMessage()).append("\n");
-			writer.append("\tStack Trace:");
+			writer.append("\tStack Trace:\n");
 			for(StackTraceElement element : exception.getStackTrace()) writer.append("\t\t").append(element.toString()).append("\n");
 			writer.flush();
 			writer.close();

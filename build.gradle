@@ -6,7 +6,7 @@ plugins {
 
 group 'smlauncher'
 mainClassName = 'smlauncher.StarMadeLauncher'
-version = '3.3.11'
+version = '3.3.12'
 
 java {
 	toolchain {
@@ -46,4 +46,5 @@ jar {
 	}
 	duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
 	archiveFileName = 'StarMade-Launcher.jar'
+	destinationDirectory = file("C:/Program Files (x86)/Steam/steamapps/common/StarMade/")
 }

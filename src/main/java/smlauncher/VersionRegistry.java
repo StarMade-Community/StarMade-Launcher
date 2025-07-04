@@ -61,8 +61,7 @@ public class VersionRegistry {
 			// Sort versions from old to recent
 			versions.sort(Collections.reverseOrder());
 		} catch(Exception e) {
-			System.out.println("Could not read versions list");
-			throw new IOException(e);
+			LogManager.logWarning("Error reading versions from " + branch.url, e);
 		}
 		openConnection.getInputStream().close();
 
