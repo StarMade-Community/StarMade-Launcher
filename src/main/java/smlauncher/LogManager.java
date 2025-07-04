@@ -78,6 +78,7 @@ public class LogManager {
 	}
 
 	public static void logWarning(String message, Exception exception) {
+		exception.printStackTrace();
 		System.out.println("[WARNING]: " + message);
 		try {
 			logWriter.append("[WARNING]: ").append(message).append("\n");
@@ -99,6 +100,7 @@ public class LogManager {
 	}
 
 	public static void logException(String message, Exception exception) {
+		exception.printStackTrace();
 		System.out.println("[ERROR]: " + message);
 		try {
 			logWriter.append("[ERROR]: ").append(message).append("\n");
@@ -114,13 +116,14 @@ public class LogManager {
 				i++;
 			}
 			logWriter.flush();
-			(new ErrorDialog("Error", message, exception, false)).setVisible(true);
+//			(new ErrorDialog("Error", message, exception, false)).setVisible(true);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
 
 	public static void logFatal(String message, Throwable exception) {
+		exception.printStackTrace();
 		System.out.println("[FATAL]: " + message);
 		try {
 			logWriter.append("[FATAL]: ").append(message).append("\n");
@@ -136,7 +139,7 @@ public class LogManager {
 				i++;
 			}
 			logWriter.flush();
-			(new ErrorDialog("Fatal Error", message, exception, true)).setVisible(true);
+//			(new ErrorDialog("Fatal Error", message, exception, true)).setVisible(true);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

@@ -45,7 +45,7 @@ import java.util.Objects;
  */
 public class StarMadeLauncher extends JFrame {
 
-	public static final String LAUNCHER_VERSION = "3.3.10";
+	public static final String LAUNCHER_VERSION = "3.3.11";
 	public static final String BUG_REPORT_URL = "https://github.com/StarMade-Community/StarMade-Launcher/issues";
 	private static final String J23ARGS = "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED";
 	private static IndexFileEntry gameVersion;
@@ -71,6 +71,7 @@ public class StarMadeLauncher extends JFrame {
 	private LauncherNewsPanel newsPanel;
 	private LauncherCommunityPanel communityPanel;
 	private JavaDownloader downloader;
+	public static boolean offlineMode;
 
 	public StarMadeLauncher() {
 		// Set window properties
@@ -102,6 +103,7 @@ public class StarMadeLauncher extends JFrame {
 		} catch(Exception exception) {
 			LogManager.logException("Failed to fetch version list! Check your internet connection!", exception);
 			JOptionPane.showMessageDialog(this, "Failed to fetch version list due to no internet connection. Launcher will start in offline mode.", "Warning", JOptionPane.WARNING_MESSAGE);
+			offlineMode = true;
 		}
 		// Read game version and branch
 
@@ -526,22 +528,27 @@ public class StarMadeLauncher extends JFrame {
 	}
 
 	private IndexFileEntry getLastUsedVersion() {
+		String version = "";
+		String shortVersion = "";
+		IndexFileEntry entry;
 		try {
-			String version;
 			File versionFile = new File(LaunchSettings.getInstallDir(), "version.txt");
 			if(versionFile.exists()) {
 				version = TextFileUtil.readText(versionFile);
 			} else {
 				version = LaunchSettings.getLastUsedVersion();
 			}
-			String shortVersion = version.split("#")[0];
-			IndexFileEntry entry = versionRegistry.searchForVersion(e -> shortVersion.equals(e.version));
+			shortVersion = version.split("#")[0];
+			String finalShortVersion = shortVersion;
+			entry = versionRegistry.searchForVersion(e -> finalShortVersion.equals(e.version));
 			if(entry != null) return entry;
+			else throw  new NullPointerException("Version list is null");
 		} catch(Exception exception) {
 			LogManager.logWarning("Failed to get last used version", exception);
+			entry = new IndexFileEntry(shortVersion, version.split("#")[0], GameBranch.RELEASE, "Unknown");
 		}
 		// Return latest release if nothing found
-		return versionRegistry.getLatestVersion(GameBranch.RELEASE);
+		return entry;
 	}
 
 	// Panel Methods
