@@ -292,6 +292,8 @@ int launch_process(const char *cmd_line, const char *working_dir) {
 
         ZeroMemory(&si, sizeof(si));
         si.cb = sizeof(si);
+        si.dwFlags = STARTF_USESHOWWINDOW;
+        si.wShowWindow = SW_HIDE;  // Hide the console window
         ZeroMemory(&pi, sizeof(pi));
 
         // Create process
