@@ -45,7 +45,7 @@ import java.util.Objects;
  */
 public class StarMadeLauncher extends JFrame {
 
-	public static final String LAUNCHER_VERSION = "3.3.13";
+	public static final String LAUNCHER_VERSION = "3.3.14";
 	public static final String BUG_REPORT_URL = "https://github.com/StarMade-Community/StarMade-Launcher/issues";
 	private static final String J23ARGS = "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED";
 	private static IndexFileEntry gameVersion;
@@ -542,7 +542,7 @@ public class StarMadeLauncher extends JFrame {
 			String finalShortVersion = shortVersion;
 			entry = versionRegistry.searchForVersion(e -> finalShortVersion.equals(e.version));
 			if(entry != null) return entry;
-			else throw  new NullPointerException("Version list is null");
+			else throw new NullPointerException("Version list is null");
 		} catch(Exception exception) {
 			LogManager.logWarning("Failed to get last used version", exception);
 			entry = new IndexFileEntry(shortVersion, version.split("#")[0], GameBranch.RELEASE, "Unknown");
@@ -948,7 +948,8 @@ public class StarMadeLauncher extends JFrame {
 			updateButton.setContentAreaFilled(false);
 			updateButton.setBorderPainted(false);
 			updateButton.addActionListener(e -> {
-				IndexFileEntry version = versionRegistry.searchForVersion(lastUsedBranch, v -> v.version.equals(selectedVersion));
+				if(lastUsedBranch == null) lastUsedBranch = GameBranch.RELEASE;
+				IndexFileEntry version = versionRegistry.searchForVersion(lastUsedBranch, v -> v.version.equals(selectedVersion) || Objects.equals(selectedVersion, "NONE"));
 				System.out.println("selected version " + version);
 				if(version != null) {
 					if(updaterThread == null || !updaterThread.updating) updateGame(version);
@@ -1132,6 +1133,7 @@ public class StarMadeLauncher extends JFrame {
 		int backupMode = UpdaterThread.BACKUP_MODE_NONE;
 		if(choice == 0) backupMode = UpdaterThread.BACKUP_MODE_DATABASE;
 		else if(choice == 1) backupMode = UpdaterThread.BACKUP_MODE_EVERYTHING;
+		else if(choice == -1) return; // User closed dialog
 		ImageIcon updateButtonEmpty = getIcon("sprites/update_load_empty.png");
 		ImageIcon updateButtonFilled = getIcon("sprites/update_load_full.png");
 		updateButton.setIcon(updateButtonEmpty);
