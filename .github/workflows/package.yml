@@ -123,7 +123,7 @@ jobs:
                 run: |
                     Copy-Item src\main\native\StarMade-Launcher.exe -Destination native-packages\windows\package\
                     Copy-Item native-packages\windows\StarMade-Launcher.jar -Destination native-packages\windows\package\
-                    Copy-Item StarMade-dedicated-server-windows.bat -Destination native-packages\windows\package\
+                    Copy-Item StarMade-dedicated-server-windows.ps1 -Destination native-packages\windows\package\
             
             -   name: Create ZIP archive
                 shell: pwsh
