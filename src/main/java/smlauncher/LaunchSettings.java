@@ -42,7 +42,6 @@ public final class LaunchSettings {
 	}
 
 	public static void saveSettings() {
-		LogManager.logInfo("Saving launch settings to file...");
 		File settingsFile = new File(SETTINGS_FILENAME);
 		try {
 			settingsFile.createNewFile();

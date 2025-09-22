@@ -60,7 +60,7 @@ public class GameUpdater extends Observable {
 	public static void selectVersion(boolean display, GameUpdater u, boolean force, String installDir, GameBranch f, int backUp, boolean selectVersion) {
 		if(display) {
 			for(int i = 0; i < u.versions.size(); i++) {
-				System.out.println("[" + i + "] v" + u.versions.get(i).version + "; " + u.versions.get(i).build);
+				System.out.println("[" + i + "] v" + u.versions.get(i).version() + "; " + u.versions.get(i).build());
 			}
 		}
 
@@ -144,8 +144,8 @@ public class GameUpdater extends Observable {
 			System.err.println("newer version always available for develop version!");
 			return true;
 		}
-		System.out.println("checking your version " + VersionContainer.build + " against latest " + versions.get(versions.size() - 1).build + " = " + VersionContainer.build.compareTo(versions.get(versions.size() - 1).build));
-		return !versions.isEmpty() && VersionContainer.build.compareTo(versions.get(versions.size() - 1).build) < 0;
+		System.out.println("checking your version " + VersionContainer.build + " against latest " + versions.get(versions.size() - 1).build() + " = " + VersionContainer.build.compareTo(versions.get(versions.size() - 1).build()));
+		return !versions.isEmpty() && VersionContainer.build.compareTo(versions.get(versions.size() - 1).build()) < 0;
 	}
 
 	private void loadVersionList(GameBranch branch) throws IOException {
@@ -200,7 +200,10 @@ public class GameUpdater extends Observable {
 			BufferedReader in = new BufferedReader(new InputStreamReader(new BufferedInputStream(openConnection.getInputStream()), StandardCharsets.UTF_8));
 			String str;
 			while((str = in.readLine()) != null) {
-				versions.add(IndexFileEntry.create(str, branch));
+				IndexFileEntry entry = IndexFileEntry.create(str, branch);
+				if(entry != null) {
+					versions.add(entry);
+				}
 			}
 
 			Collections.sort(versions);
@@ -354,10 +357,10 @@ public class GameUpdater extends Observable {
 				}
 
 				setChanged();
-				notifyObservers("Retrieving checksums for v" + version.version + "(build " + version.build + ")");
+				notifyObservers("Retrieving checksums for v" + version.version() + "(build " + version.build() + ")");
 
 				// TODO reused code
-				String buildDir = FILES_URL + version.path + "/";
+				String buildDir = FILES_URL + version.path() + "/";
 				ChecksumFile checksums = getChecksums(buildDir);
 				System.err.println("Downloaded checksums: \n" + checksums);
 

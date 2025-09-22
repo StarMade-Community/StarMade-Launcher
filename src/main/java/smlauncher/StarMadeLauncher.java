@@ -45,7 +45,7 @@ import java.util.Objects;
  */
 public class StarMadeLauncher extends JFrame {
 
-	public static final String LAUNCHER_VERSION = "3.3.14";
+	public static final String LAUNCHER_VERSION = "3.3.15";
 	public static final String BUG_REPORT_URL = "https://github.com/StarMade-Community/StarMade-Launcher/issues";
 	private static final String J23ARGS = "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED";
 	private static IndexFileEntry gameVersion;
@@ -109,7 +109,7 @@ public class StarMadeLauncher extends JFrame {
 
 		gameVersion = getLastUsedVersion();
 		setGameVersion(gameVersion);
-		setBranch(gameVersion.branch);
+		setBranch(gameVersion.branch());
 
 		LaunchSettings.saveSettings();
 
@@ -220,7 +220,7 @@ public class StarMadeLauncher extends JFrame {
 	}
 
 	private static void startServerHeadless() {
-		ArrayList<String> commandComponents = getCommandComponents(true);
+		/*ArrayList<String> commandComponents = getCommandComponents(true);
 		ProcessBuilder process = new ProcessBuilder(commandComponents);
 		process.directory(new File(LaunchSettings.getInstallDir()));
 		process.redirectOutput(ProcessBuilder.Redirect.INHERIT);
@@ -230,7 +230,7 @@ public class StarMadeLauncher extends JFrame {
 			process.start();
 		} catch(Exception exception) {
 			LogManager.logFatal("Failed to start server in headless mode", exception);
-		}
+		}*/
 	}
 
 	private static void startup() {
@@ -311,7 +311,7 @@ public class StarMadeLauncher extends JFrame {
 
 	private static void setGameVersion(IndexFileEntry gameVersion) {
 		if(gameVersion != null) {
-			LaunchSettings.setLastUsedVersion(gameVersion.version);
+			LaunchSettings.setLastUsedVersion(gameVersion.version());
 			if(usingOldVersion()) LaunchSettings.setJvmArgs("--illegal-access=permit");
 			else LaunchSettings.setJvmArgs("");
 		} else {
@@ -326,7 +326,7 @@ public class StarMadeLauncher extends JFrame {
 	}
 
 	private static boolean usingOldVersion() {
-		return gameVersion.version.startsWith("0.2") || gameVersion.version.startsWith("0.1");
+		return gameVersion.version().startsWith("0.2") || gameVersion.version().startsWith("0.1");
 	}
 
 	private static void clearPanel(JPanel panel) {
@@ -419,7 +419,7 @@ public class StarMadeLauncher extends JFrame {
 	}
 
 	private static String getJavaPath() {
-		if(gameVersion.version.startsWith("0.2") || gameVersion.version.startsWith("0.1")) {
+		if(gameVersion.version().startsWith("0.2") || gameVersion.version().startsWith("0.1")) {
 			return (new File(String.format(currentOS.javaPath, 8))).getAbsolutePath();
 		} else {
 			return (new File(String.format(currentOS.javaPath, 23))).getAbsolutePath();
@@ -427,7 +427,7 @@ public class StarMadeLauncher extends JFrame {
 	}
 
 	private static JavaVersion getJavaVersion() {
-		if(gameVersion.version.startsWith("0.2") || gameVersion.version.startsWith("0.1")) {
+		if(gameVersion.version().startsWith("0.2") || gameVersion.version().startsWith("0.1")) {
 			return JavaVersion.JAVA_8;
 		} else {
 			return JavaVersion.JAVA_23;
@@ -447,15 +447,15 @@ public class StarMadeLauncher extends JFrame {
 
 		// Add versions to dropdown
 		for(IndexFileEntry version : versions) {
-			if(version.equals(versions.getFirst())) versionDropdown.addItem(version.version + " (Latest)");
-			else versionDropdown.addItem(version.version);
+			if(version.equals(versions.getFirst())) versionDropdown.addItem(version.version() + " (Latest)");
+			else versionDropdown.addItem(version.version());
 		}
 	}
 
 	public static ArrayList<String> getCommandComponents(boolean server) {
 		ArrayList<String> commandComponents = new ArrayList<>();
 		commandComponents.add(getJavaPath());
-		if(!gameVersion.version.startsWith("0.2") && !gameVersion.version.startsWith("0.1")) {
+		if(!gameVersion.version().startsWith("0.2") && !gameVersion.version().startsWith("0.1")) {
 			commandComponents.add(J23ARGS);
 		}
 
@@ -540,7 +540,7 @@ public class StarMadeLauncher extends JFrame {
 			}
 			shortVersion = version.split("#")[0];
 			String finalShortVersion = shortVersion;
-			entry = versionRegistry.searchForVersion(e -> finalShortVersion.equals(e.version));
+			entry = versionRegistry.searchForVersion(e -> finalShortVersion.equals(e.version()));
 			if(entry != null) return entry;
 			else throw new NullPointerException("Version list is null");
 		} catch(Exception exception) {
@@ -598,7 +598,7 @@ public class StarMadeLauncher extends JFrame {
 		});
 
 		if(getLastUsedVersion() == null) selectedVersion = null;
-		else selectedVersion = gameVersion.version;
+		else selectedVersion = gameVersion.version();
 
 		// Create initial panels
 		createPlayPanel(footerPanel);
@@ -949,7 +949,7 @@ public class StarMadeLauncher extends JFrame {
 			updateButton.setBorderPainted(false);
 			updateButton.addActionListener(e -> {
 				if(lastUsedBranch == null) lastUsedBranch = GameBranch.RELEASE;
-				IndexFileEntry version = versionRegistry.searchForVersion(lastUsedBranch, v -> v.version.equals(selectedVersion) || Objects.equals(selectedVersion, "NONE"));
+				IndexFileEntry version = versionRegistry.searchForVersion(lastUsedBranch, v -> v.version().equals(selectedVersion) || Objects.equals(selectedVersion, "NONE"));
 				System.out.println("selected version " + version);
 				if(version != null) {
 					if(updaterThread == null || !updaterThread.updating) updateGame(version);
@@ -978,7 +978,7 @@ public class StarMadeLauncher extends JFrame {
 			playButton.addActionListener(e -> {
 				try {
 					dispose();
-					LaunchSettings.setLastUsedVersion(gameVersion.version);
+					LaunchSettings.setLastUsedVersion(gameVersion.version());
 					LaunchSettings.saveSettings();
 					runStarMade(serverMode);
 				} catch(Exception exception) {
@@ -1022,7 +1022,7 @@ public class StarMadeLauncher extends JFrame {
 	}
 
 	public boolean checkNeedsUpdate() {
-		return !gameJarExists(LaunchSettings.getInstallDir()) || gameVersion == null || (!Objects.equals(gameVersion.version, selectedVersion) && selectedVersion != null);
+		return !gameJarExists(LaunchSettings.getInstallDir()) || gameVersion == null || (!Objects.equals(gameVersion.version(), selectedVersion) && selectedVersion != null);
 	}
 
 	private void createPlayPanel(JPanel footerPanel) {
@@ -1044,6 +1044,10 @@ public class StarMadeLauncher extends JFrame {
 		panel.setLayout(new BorderLayout());
 		footerPanel.add(panel);
 
+		if(versionPanel != null) {
+			versionPanel.setVisible(false);
+			footerPanel.remove(versionPanel);
+		}
 		versionPanel = createVersionPanel(serverMode);
 		footerPanel.add(versionPanel, BorderLayout.WEST);
 
@@ -1163,9 +1167,9 @@ public class StarMadeLauncher extends JFrame {
 			public void onFinished() {
 				gameVersion = getLastUsedVersion();
 				assert gameVersion != null;
-				LaunchSettings.setLastUsedVersion(gameVersion.version);
-				selectedVersion = gameVersion.version;
-				setBranch(gameVersion.branch);
+				LaunchSettings.setLastUsedVersion(gameVersion.version());
+				selectedVersion = gameVersion.version();
+				setBranch(gameVersion.branch());
 				LaunchSettings.saveSettings();
 				SwingUtilities.invokeLater(() -> {
 					try {
@@ -1259,7 +1263,7 @@ public class StarMadeLauncher extends JFrame {
 
 	private IndexFileEntry getLatestVersion(GameBranch branch) {
 		IndexFileEntry currentVersion = getLastUsedVersion();
-		if(debugMode || (currentVersion != null && !currentVersion.version.startsWith("0.2") && !currentVersion.version.startsWith("0.1"))) {
+		if(debugMode || (currentVersion != null && !currentVersion.version().startsWith("0.2") && !currentVersion.version().startsWith("0.1"))) {
 			return getLastUsedVersion();
 		}
 		return versionRegistry.getLatestVersion(branch);

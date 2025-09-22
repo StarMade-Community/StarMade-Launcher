@@ -87,7 +87,7 @@ public class LauncherVersionPanel extends JPanel {
 		GameBranch branch = GameBranch.getForIndex(branchDropdown.getSelectedIndex());
 
 		versionRegistry.getVersions(branch).forEach(version -> {
-			versionDropdown.addItem(version.version + " (" + version.build + ")");
+			versionDropdown.addItem(version.version() + " (" + version.build() + ")");
 		});
 	}
 

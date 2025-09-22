@@ -40,7 +40,7 @@ public class UpdaterThread extends Thread {
 			}
 
 			// Get checksums
-			String buildDir = GameUpdater.FILES_URL + version.path; // build dir is same as path
+			String buildDir = GameUpdater.FILES_URL + version.path(); // build dir is same as path
 			ChecksumFile checksums = GameUpdater.getChecksums(buildDir);
 
 			if(!installDir.exists()) installDir.mkdirs();

@@ -56,7 +56,9 @@ public class VersionRegistry {
 			String line;
 			while((line = in.readLine()) != null) {
 				IndexFileEntry entry = IndexFileEntry.create(line, branch);
-				versions.add(entry);
+				if(entry != null) {
+					versions.add(entry);
+				}
 			}
 			// Sort versions from old to recent
 			versions.sort(Collections.reverseOrder());
@@ -66,7 +68,7 @@ public class VersionRegistry {
 		openConnection.getInputStream().close();
 
 		if(branch == GameBranch.DEV) { // Remove old dev versions
-			versions.removeIf(v -> v.build.startsWith("2017"));
+			versions.removeIf(v -> v.build().startsWith("2017"));
 		}
 		return versions;
 	}
@@ -130,9 +132,16 @@ public class VersionRegistry {
 	 * @return the list of versions
 	 */
 	public IndexFileEntry getLatestVersion(GameBranch branch) {
+		if(branchVersions.isEmpty()) {
+			try {
+				createRegistry();
+			} catch(Exception exception) {
+				LogManager.logWarning("Error creating version registry", exception);
+				return null;
+			}
+		}
 		List<IndexFileEntry> versions = branchVersions.get(branch);
-		if(versions != null) return versions.get(0);
+		if(versions != null) return versions.getFirst();
 		return null;
 	}
-
 }
