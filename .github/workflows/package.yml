@@ -155,7 +155,7 @@ jobs:
                 run: |
                     mkdir -p native-packages/macos-metal/jre8
                     curl -L "${{ env.JAVA8_MACOS_URL }}" -o java8.tar.gz
-                    tar -xzf java8.tar.gz -C native-packages/macos/jre8
+                    tar -xzf java8.tar.gz -C native-packages/macos-metal/jre8
             
             -   name: Download Java 23 Runtime
                 run: |
