@@ -9,11 +9,13 @@ permissions:
 env:
     # TODO: These should be hosted on Schine's AWS or something
     JAVA8_WINDOWS_URL: https://www.dropbox.com/scl/fi/44tygsdp78i9p4k7ib9il/jre8_windows.zip?rlkey=gerlec8z50q2s9w1oolc0kroy&st=viw3wjsz&dl=1
-    JAVA8_MACOS_URL: https://www.dropbox.com/scl/fi/b9z366ueaynavmfmbg4vm/jre8_macos.tar.gz?rlkey=vpe33f2eo2xp5dw7qec39zaer&st=ejpc0679&dl=1
+    JAVA8_MACOS_METAL_URL: https://www.dropbox.com/scl/fi/b9z366ueaynavmfmbg4vm/jre8_macos.tar.gz?rlkey=vpe33f2eo2xp5dw7qec39zaer&st=ejpc0679&dl=1
+    JAVA8_MACOS_INTEL_URL: todo
     JAVA8_LINUX_URL: https://www.dropbox.com/scl/fi/rfs129gej4y3faygkiwc2/jre8_linux.tar.gz?rlkey=poa05blnpsnainayxjwzio3i8&st=xiig9mt2&dl=1
     
     JAVA23_WINDOWS_URL: https://www.dropbox.com/scl/fi/j7k6ter2cd3428148dwos/jre23_windows.zip?rlkey=l9noke6tgbsiv4vbmhxrjif5u&st=kj6dxi75&dl=1
-    JAVA23_MACOS_URL: https://www.dropbox.com/scl/fi/krduirulh2j9vglyyb4oi/jre23_macos.tar.gz?rlkey=0cts3eqmpgdme9mxxmri34x7c&st=jmvwem5u&dl=1
+    JAVA23_MACOS_METAL_URL: https://www.dropbox.com/scl/fi/krduirulh2j9vglyyb4oi/jre23_macos.tar.gz?rlkey=0cts3eqmpgdme9mxxmri34x7c&st=jmvwem5u&dl=1
+    JAVA23_MACOS_INTEL_URL: todo
     JAVA23_LINUX_URL: https://www.dropbox.com/scl/fi/5ygp7f8rj4wloes4q818d/jre23_linux.tar.gz?rlkey=jmpfvvn3cyhsuzsu4xr127ww3&st=1qlrh16h&dl=1
 
 jobs:
@@ -136,8 +138,8 @@ jobs:
                     name: starmade-launcher-windows
                     path: native-packages/StarMade-Launcher-Windows.zip
     
-    package-macos:
-        name: Package for MacOS
+    package-macos-metal:
+        name: Package for MacOS (Metal)
         needs: build-jar
         runs-on: macos-latest
         
@@ -153,13 +155,13 @@ jobs:
             -   name: Download Java 8 Runtime
                 run: |
                     mkdir -p native-packages/macos/jre8
-                    curl -L "${{ env.JAVA8_MACOS_URL }}" -o java8.tar.gz
+                    curl -L "${{ env.JAVA8_MACOS_METAL_URL }}" -o java8.tar.gz
                     tar -xzf java8.tar.gz -C native-packages/macos/jre8
             
             -   name: Download Java 23 Runtime
                 run: |
                     mkdir -p native-packages/macos/jre23
-                    curl -L "${{ env.JAVA23_MACOS_URL }}" -o java23.tar.gz
+                    curl -L "${{ env.JAVA23_MACOS_METAL_URL }}" -o java23.tar.gz
                     tar -xzf java23.tar.gz -C native-packages/macos/jre23
             
             -   name: Create app bundle structure
@@ -228,12 +230,96 @@ jobs:
                     cd native-packages/macos
                     zip -r ../StarMade-Launcher-MacOS.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command jre8 jre23
             
-            -   name: Upload MacOS package
+            -   name: Upload MacOS Metal package
                 uses: actions/upload-artifact@v4
                 with:
-                    name: starmade-launcher-macos
-                    path: native-packages/StarMade-Launcher-MacOS.zip
-    
+                    name: starmade-launcher-macos-metal
+                    path: native-packages/StarMade-Launcher-MacOS-metal.zip
+
+    package-macos-intel:
+        name: Package for MacOS (Intel)
+        needs: build-jar
+        runs-on: macos-13
+        steps:
+            -   uses: actions/checkout@v3
+            -   name: Download JAR
+                uses: actions/download-artifact@v4
+                with:
+                    name: starmade-launcher-jar
+                    path: native-packages/macos-intel/StarMade-Launcher.app/Contents/Resources/
+            -   name: Download Java 8 Runtime
+                run: |
+                    mkdir -p native-packages/macos-intel/jre8
+                    curl -L "${{ env.JAVA8_MACOS_INTEL_URL }}" -o java8.tar.gz
+                    tar -xzf java8.tar.gz -C native-packages/macos-intel/jre8
+            -   name: Download Java 23 Runtime
+                run: |
+                    mkdir -p native-packages/macos-intel/jre23
+                    curl -L "${{ env.JAVA23_MACOS_INTEL_URL }}" -o java23.tar.gz
+                    tar -xzf java23.tar.gz -C native-packages/macos-intel/jre23
+            -   name: Create app bundle structure
+                run: |
+                    mkdir -p "native-packages/macos-intel/StarMade-Launcher.app/Contents/MacOS"
+                    mkdir -p "native-packages/macos-intel/StarMade-Launcher.app/Contents/Resources"
+            -   name: Create native folder
+                run: mkdir -p src/main/native
+            -   name: Copy unified launcher code
+                run: |
+                    mkdir -p src/main/native
+                    cp src/main/c/starmade_launcher.c src/main/native/starmade_launcher.c
+            -   name: Compile MacOS launcher (Intel)
+                run: |
+                    cd src/main/native
+                    gcc -o StarMade-Launcher starmade_launcher.c -framework CoreFoundation
+            -   name: Create Info.plist
+                run: |
+                    cat > "native-packages/macos-intel/StarMade-Launcher.app/Contents/Info.plist" << EOF
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+                    <plist version="1.0">
+                    <dict>
+                        <key>CFBundleExecutable</key>
+                        <string>StarMade-Launcher</string>
+                        <key>CFBundleIconFile</key>
+                        <string>AppIcon</string>
+                        <key>CFBundleIdentifier</key>
+                        <string>org.starmade.launcher</string>
+                        <key>CFBundleInfoDictionaryVersion</key>
+                        <string>6.0</string>
+                        <key>CFBundleName</key>
+                        <string>StarMade Launcher</string>
+                        <key>CFBundlePackageType</key>
+                        <string>APPL</string>
+                        <key>CFBundleShortVersionString</key>
+                        <string>${{ needs.build-jar.outputs.project_version }}</string>
+                        <key>CFBundleVersion</key>
+                        <string>${{ needs.build-jar.outputs.project_version }}</string>
+                        <key>NSHighResolutionCapable</key>
+                        <true/>
+                    </dict>
+                    </plist>
+                    EOF
+            -   name: Copy native launcher
+                run: |
+                    cp src/main/native/StarMade-Launcher "native-packages/macos-intel/StarMade-Launcher.app/Contents/MacOS/"
+                    chmod +x "native-packages/macos-intel/StarMade-Launcher.app/Contents/MacOS/StarMade-Launcher"
+            -   name: Convert icon
+                run: |
+                    cp src/main/resources/starmade.icns "native-packages/macos-intel/StarMade-Launcher.app/Contents/Resources/AppIcon.icns"
+            -   name: Copy server script
+                run: |
+                    cp StarMade-dedicated-server-macos.command native-packages/macos-intel/
+                    chmod +x native-packages/macos-intel/StarMade-dedicated-server-macos.command
+            -   name: Create ZIP archive
+                run: |
+                    cd native-packages/macos-intel
+                    zip -r ../StarMade-Launcher-MacOS-Intel.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command jre8 jre23
+            -   name: Upload MacOS Intel package
+                uses: actions/upload-artifact@v4
+                with:
+                    name: starmade-launcher-macos-intel
+                    path: native-packages/StarMade-Launcher-MacOS-Intel.zip
+
     package-linux:
         name: Package for Linux
         needs: build-jar
@@ -299,7 +385,8 @@ jobs:
         needs:
             - build-jar
             - package-windows
-            - package-macos
+            - package-macos-metal
+            - package-macos-intel
             - package-linux
         runs-on: ubuntu-latest
         steps:
@@ -321,5 +408,7 @@ jobs:
                     name: StarMade Launcher v${{ needs.build-jar.outputs.project_version }}
                     files: |
                         artifacts/StarMade-Launcher-Windows.zip
-                        artifacts/StarMade-Launcher-MacOS.zip
+                        artifacts/StarMade-Launcher-MacOS-metal.zip
+                        artifacts/StarMade-Launcher-MacOS-Intel.zip
                         artifacts/StarMade-Launcher-Linux.tar.gz
+
