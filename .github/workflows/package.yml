@@ -227,7 +227,7 @@ jobs:
             -   name: Create ZIP archive
                 run: |
                     cd native-packages/macos-metal
-                    zip -r ../StarMade-Launcher-MacOS.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command jre8 jre23
+                    zip -r ../StarMade-Launcher-MacOS-Metal.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command jre8 jre23
             
             -   name: Upload MacOS Metal package
                 uses: actions/upload-artifact@v4
