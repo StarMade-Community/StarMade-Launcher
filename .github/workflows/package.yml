@@ -33,7 +33,7 @@ jobs:
             
             -   name: Grant execute permission for gradlew
                 run: chmod +x gradlew
-            
+
             -   name: Get Project Version
                 id: get_version
                 run: |
@@ -149,24 +149,24 @@ jobs:
                 uses: actions/download-artifact@v4
                 with:
                     name: starmade-launcher-jar
-                    path: native-packages/macos/StarMade-Launcher.app/Contents/Resources/
+                    path: native-packages/macos-metal/StarMade-Launcher.app/Contents/Resources/
             
             -   name: Download Java 8 Runtime
                 run: |
-                    mkdir -p native-packages/macos/jre8
+                    mkdir -p native-packages/macos-metal/jre8
                     curl -L "${{ env.JAVA8_MACOS_URL }}" -o java8.tar.gz
                     tar -xzf java8.tar.gz -C native-packages/macos/jre8
             
             -   name: Download Java 23 Runtime
                 run: |
-                    mkdir -p native-packages/macos/jre23
+                    mkdir -p native-packages/macos-metal/jre23
                     curl -L "${{ env.JAVA23_MACOS_METAL_URL }}" -o java23.tar.gz
-                    tar -xzf java23.tar.gz -C native-packages/macos/jre23
+                    tar -xzf java23.tar.gz -C native-packages/macos-metal/jre23
             
             -   name: Create app bundle structure
                 run: |
-                    mkdir -p "native-packages/macos/StarMade-Launcher.app/Contents/MacOS"
-                    mkdir -p "native-packages/macos/StarMade-Launcher.app/Contents/Resources"
+                    mkdir -p "native-packages/macos-metal/StarMade-Launcher.app/Contents/MacOS"
+                    mkdir -p "native-packages/macos-metal/StarMade-Launcher.app/Contents/Resources"
             
             -   name: Create native folder
                 run: mkdir -p src/main/native
@@ -176,14 +176,14 @@ jobs:
                     mkdir -p src/main/native
                     cp src/main/c/starmade_launcher.c src/main/native/starmade_launcher.c
             
-            -   name: Compile MacOS launcher
+            -   name: Compile MacOS launcher (Metal)
                 run: |
                     cd src/main/native
                     gcc -o StarMade-Launcher starmade_launcher.c -framework CoreFoundation
             
             -   name: Create Info.plist
                 run: |
-                    cat > "native-packages/macos/StarMade-Launcher.app/Contents/Info.plist" << EOF
+                    cat > "native-packages/macos-metal/StarMade-Launcher.app/Contents/Info.plist" << EOF
                     <?xml version="1.0" encoding="UTF-8"?>
                     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
                     <plist version="1.0">
@@ -212,28 +212,28 @@ jobs:
             
             -   name: Copy native launcher
                 run: |
-                    cp src/main/native/StarMade-Launcher "native-packages/macos/StarMade-Launcher.app/Contents/MacOS/"
-                    chmod +x "native-packages/macos/StarMade-Launcher.app/Contents/MacOS/StarMade-Launcher"
+                    cp src/main/native/StarMade-Launcher "native-packages/macos-metal/StarMade-Launcher.app/Contents/MacOS/"
+                    chmod +x "native-packages/macos-metal/StarMade-Launcher.app/Contents/MacOS/StarMade-Launcher"
             
             -   name: Convert icon
                 run: |
-                    cp src/main/resources/starmade.icns "native-packages/macos/StarMade-Launcher.app/Contents/Resources/AppIcon.icns"
+                    cp src/main/resources/starmade.icns "native-packages/macos-metal/StarMade-Launcher.app/Contents/Resources/AppIcon.icns"
             
             -   name: Copy server script
                 run: |
-                    cp StarMade-dedicated-server-macos.command native-packages/macos/
-                    chmod +x native-packages/macos/StarMade-dedicated-server-macos.command
+                    cp StarMade-dedicated-server-macos.command native-packages/macos-metal/
+                    chmod +x native-packages/macos-metal/StarMade-dedicated-server-macos.command
             
             -   name: Create ZIP archive
                 run: |
-                    cd native-packages/macos
+                    cd native-packages/macos-metal
                     zip -r ../StarMade-Launcher-MacOS.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command jre8 jre23
             
             -   name: Upload MacOS Metal package
                 uses: actions/upload-artifact@v4
                 with:
                     name: starmade-launcher-macos-metal
-                    path: native-packages/StarMade-Launcher-MacOS-metal.zip
+                    path: native-packages/StarMade-Launcher-MacOS-Metal.zip
 
     package-macos-intel:
         name: Package for MacOS (Intel)
