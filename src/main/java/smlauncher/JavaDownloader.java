@@ -128,7 +128,7 @@ public class JavaDownloader {
 	}
 
 	private String getJreFolderName() {
-		return "/jre" + version.number;
+		return "jre" + version.number;
 	}
 
 	void cleanupZip() {

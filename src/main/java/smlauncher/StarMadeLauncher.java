@@ -1003,11 +1003,6 @@ public class StarMadeLauncher extends JFrame {
 	}
 
 	private void runStarMade(boolean server) {
-		try {
-			downloadJRE();
-		} catch(Exception exception) {
-			LogManager.logFatal("Failed to download JRE", exception);
-		}
 		ArrayList<String> commandComponents = getCommandComponents(server);
 		ProcessBuilder process = new ProcessBuilder(commandComponents);
 		process.directory(new File(LaunchSettings.getInstallDir()));
