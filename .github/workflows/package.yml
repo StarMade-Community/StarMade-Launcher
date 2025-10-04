@@ -9,13 +9,12 @@ permissions:
 env:
     # TODO: These should be hosted on Schine's AWS or something
     JAVA8_WINDOWS_URL: https://www.dropbox.com/scl/fi/44tygsdp78i9p4k7ib9il/jre8_windows.zip?rlkey=gerlec8z50q2s9w1oolc0kroy&st=viw3wjsz&dl=1
-    JAVA8_MACOS_METAL_URL: https://www.dropbox.com/scl/fi/b9z366ueaynavmfmbg4vm/jre8_macos.tar.gz?rlkey=vpe33f2eo2xp5dw7qec39zaer&st=ejpc0679&dl=1
-    JAVA8_MACOS_INTEL_URL: todo
+    JAVA8_MACOS_URL: https://www.dropbox.com/scl/fi/b9z366ueaynavmfmbg4vm/jre8_macos.tar.gz?rlkey=vpe33f2eo2xp5dw7qec39zaer&st=ejpc0679&dl=1
     JAVA8_LINUX_URL: https://www.dropbox.com/scl/fi/rfs129gej4y3faygkiwc2/jre8_linux.tar.gz?rlkey=poa05blnpsnainayxjwzio3i8&st=xiig9mt2&dl=1
     
     JAVA23_WINDOWS_URL: https://www.dropbox.com/scl/fi/j7k6ter2cd3428148dwos/jre23_windows.zip?rlkey=l9noke6tgbsiv4vbmhxrjif5u&st=kj6dxi75&dl=1
-    JAVA23_MACOS_METAL_URL: https://www.dropbox.com/scl/fi/krduirulh2j9vglyyb4oi/jre23_macos.tar.gz?rlkey=0cts3eqmpgdme9mxxmri34x7c&st=jmvwem5u&dl=1
-    JAVA23_MACOS_INTEL_URL: todo
+    JAVA23_MACOS_METAL_URL: https://www.dropbox.com/scl/fi/p6zcpl9kaihbhphxer5ty/jre23_macos_metal.tar.gz?rlkey=4e3b0a2z3fufg9ztdy8h1364p&st=l6uvz29z&dl=1
+    JAVA23_MACOS_INTEL_URL: https://www.dropbox.com/scl/fi/26vl7hxkh4stty11s8opu/jre23_macos_intel.tar.gz?rlkey=dbh7nh384t46food3ot71aevi&st=bb0qa4hh&dl=1
     JAVA23_LINUX_URL: https://www.dropbox.com/scl/fi/5ygp7f8rj4wloes4q818d/jre23_linux.tar.gz?rlkey=jmpfvvn3cyhsuzsu4xr127ww3&st=1qlrh16h&dl=1
 
 jobs:
@@ -155,7 +154,7 @@ jobs:
             -   name: Download Java 8 Runtime
                 run: |
                     mkdir -p native-packages/macos/jre8
-                    curl -L "${{ env.JAVA8_MACOS_METAL_URL }}" -o java8.tar.gz
+                    curl -L "${{ env.JAVA8_MACOS_URL }}" -o java8.tar.gz
                     tar -xzf java8.tar.gz -C native-packages/macos/jre8
             
             -   name: Download Java 23 Runtime
@@ -250,7 +249,7 @@ jobs:
             -   name: Download Java 8 Runtime
                 run: |
                     mkdir -p native-packages/macos-intel/jre8
-                    curl -L "${{ env.JAVA8_MACOS_INTEL_URL }}" -o java8.tar.gz
+                    curl -L "${{ env.JAVA8_MACOS_URL }}" -o java8.tar.gz
                     tar -xzf java8.tar.gz -C native-packages/macos-intel/jre8
             -   name: Download Java 23 Runtime
                 run: |
