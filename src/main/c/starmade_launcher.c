@@ -50,8 +50,6 @@
 #define MAX_CMD_LENGTH 4096
 #define MAX_PATH_LENGTH 1024
 #define LAUNCHER_JAR "StarMade-Launcher.jar"
-#define JAVA8_DIR "jre8"
-#define JAVA23_DIR "jre23"
 
 // Java executable paths for each platform
 #ifdef _WIN32
@@ -112,11 +110,13 @@ int main(int argc, char *argv[]) {
     } else if (file_exists(java8_path)) {
         java_to_use = java8_path;
     } else {
-        show_error_message(
-            "Could not find Java runtime at any of the following locations:\n"
-            "  - %s\n  - %s\n"
-            java23_path, java8_path
-        );
+        char error_msg[MAX_PATH_LENGTH * 2];
+        snprintf(error_msg, sizeof(error_msg),
+                "Could not find a Java runtime at any of the following locations:\n"
+                "%s\n%s\n"
+                "Please make sure you have extracted all files correctly.",
+                java8_path, java23_path);
+        show_error_message(error_msg);
         return 1;
     }
 
