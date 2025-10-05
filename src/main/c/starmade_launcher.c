@@ -319,8 +319,10 @@ int launch_process(const char *cmd_line, const char *working_dir) {
 
         return 1;
     #elif defined(__APPLE__)
-        // Use posix_spawn to launch Java as a GUI process
+        // Improved macOS process launch for GUI Swing apps
         #include <spawn.h>
+        #include <unistd.h>
+        #include <sys/wait.h>
         extern char **environ;
 
         // Tokenize cmd_line into argv
@@ -341,14 +343,32 @@ int launch_process(const char *cmd_line, const char *working_dir) {
             return 0;
         }
 
-        pid_t pid;
-        int status = posix_spawn(&pid, argv[0], NULL, NULL, argv, environ);
-        free(cmd_copy);
-        if (status == 0) {
-            // Optionally, detach and let the launcher exit
-            return 1;
-        } else {
+        pid_t pid = fork();
+        if (pid < 0) {
+            // Fork failed
+            free(cmd_copy);
             return 0;
+        } else if (pid == 0) {
+            // Child process: redirect output to launcher.log
+            FILE *log = fopen("launcher.log", "w");
+            if (log) {
+                dup2(fileno(log), STDOUT_FILENO);
+                dup2(fileno(log), STDERR_FILENO);
+                fclose(log);
+            }
+            // Execute Java
+            execvp(argv[0], argv);
+            // If execvp fails
+            perror("execvp failed");
+            exit(1);
+        } else {
+            // Parent process: print debug info and wait for child to start
+            printf("[DEBUG] Launched process PID: %d\n", pid);
+            int status = 0;
+            // Optionally, wait for child to finish or detach
+            sleep(1); // Give child time to start
+            free(cmd_copy);
+            return 1;
         }
     #else
         // Unix implementation
