@@ -113,8 +113,9 @@ int main(int argc, char *argv[]) {
         java_to_use = java8_path;
     } else {
         show_error_message(
-            "Could not find Java runtime.\n"
-            "Please make sure both Java 8 and Java 23 runtimes are installed in the correct location."
+            "Could not find Java runtime at any of the following locations:\n"
+            "  - %s\n  - %s\n"
+            java23_path, java8_path
         );
         return 1;
     }
