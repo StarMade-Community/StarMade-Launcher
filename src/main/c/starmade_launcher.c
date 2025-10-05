@@ -319,63 +319,13 @@ int launch_process(const char *cmd_line, const char *working_dir) {
 
         return 1;
     #elif defined(__APPLE__)
-        // Improved macOS process launch for GUI Swing apps
-        #include <spawn.h>
-        #include <unistd.h>
-        #include <sys/wait.h>
-        extern char **environ;
-
-        // Robust argument splitting for quoted args
-        char *cmd_copy = strdup(cmd_line);
-        if (!cmd_copy) return 0;
-        char *argv[64];
-        int argc = 0;
-        char *p = cmd_copy;
-        while (*p && argc < 63) {
-            while (*p == ' ') p++;
-            if (!*p) break;
-            if (*p == '"') {
-                p++;
-                argv[argc++] = p;
-                while (*p && *p != '"') p++;
-                if (*p) {*p = 0; p++;}
-            } else {
-                argv[argc++] = p;
-                while (*p && *p != ' ') p++;
-                if (*p) {*p = 0; p++;}
-            }
-        }
-        argv[argc] = NULL;
-
-        // Set working directory
-        if (chdir(working_dir) != 0) {
-            free(cmd_copy);
-            return 0;
-        }
-
-        pid_t pid = fork();
-        if (pid < 0) {
-            free(cmd_copy);
-            return 0;
-        } else if (pid == 0) {
-            FILE *log = fopen("launcher.log", "w");
-            if (log) {
-                dup2(fileno(log), STDOUT_FILENO);
-                dup2(fileno(log), STDERR_FILENO);
-                fprintf(log, "[DEBUG] Args: ");
-                for (int i = 0; i < argc; i++) fprintf(log, "[%s] ", argv[i]);
-                fprintf(log, "\n[DEBUG] Working dir: %s\n", working_dir);
-                fclose(log);
-            }
-            execvp(argv[0], argv);
-            perror("execvp failed");
-            exit(1);
-        } else {
-            printf("[DEBUG] Launched process PID: %d\n", pid);
-            sleep(1);
-            free(cmd_copy);
-            return 1;
-        }
+        // Use 'open' to launch Java as a GUI app for the JAR
+        char open_cmd[MAX_CMD_LENGTH * 2];
+        snprintf(open_cmd, sizeof(open_cmd),
+            "open -n -a \"%s\" --args -XstartOnFirstThread --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED -jar \"%s\"",
+            java_to_use, launcher_jar);
+        int result = system(open_cmd);
+        return (result == 0);
     #else
         // Unix implementation
         size_t required_size = strlen(working_dir) + strlen(cmd_line) + 10; // 10 for "cd "" && " and null terminator
