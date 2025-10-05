@@ -223,6 +223,10 @@ jobs:
                 run: |
                     cp StarMade-dedicated-server-macos.command native-packages/macos-metal/
                     chmod +x native-packages/macos-metal/StarMade-dedicated-server-macos.command
+
+            -   name: Codesign application
+                run: |
+                  codesign --force --deep --sign - "native-packages/macos-metal/StarMade-Launcher.app"
             
             -   name: Create ZIP archive
                 run: |
@@ -309,6 +313,9 @@ jobs:
                 run: |
                     cp StarMade-dedicated-server-macos.command native-packages/macos-intel/
                     chmod +x native-packages/macos-intel/StarMade-dedicated-server-macos.command
+            -   name: Codesign application
+                run: |
+                  codesign --force --deep --sign - "native-packages/macos-intel/StarMade-Launcher.app"
             -   name: Create ZIP archive
                 run: |
                     cd native-packages/macos-intel
@@ -362,7 +369,7 @@ jobs:
                 run: |
                     cp src/main/native/StarMade-Launcher native-packages/linux/
                     chmod +x native-packages/linux/StarMade-Launcher
-            
+
             -   name: Copy server script
                 run: |
                     cp StarMade-dedicated-server-linux.sh native-packages/linux/
