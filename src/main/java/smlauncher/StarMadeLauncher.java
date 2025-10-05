@@ -45,7 +45,7 @@ import java.util.Objects;
  */
 public class StarMadeLauncher extends JFrame {
 
-	public static final String LAUNCHER_VERSION = "3.3.15";
+	public static final String LAUNCHER_VERSION = "3.3.16";
 	public static final String BUG_REPORT_URL = "https://github.com/StarMade-Community/StarMade-Launcher/issues";
 	private static final String J23ARGS = "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED";
 	private static IndexFileEntry gameVersion;
@@ -92,6 +92,24 @@ public class StarMadeLauncher extends JFrame {
 			LogManager.logException("Failed to set window icon", exception);
 		}
 
+		// Get the current OS
+		currentOS = OperatingSystem.getCurrent();
+		if(currentOS == OperatingSystem.MAC) {
+			//Set working directory to outside the app bundle
+			try {
+				URI uri = StarMadeLauncher.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+				File jarFile = new File(uri);
+				if(jarFile.getAbsolutePath().endsWith("/Contents/Resources/Java/StarMade-Launcher.jar") || jarFile.getAbsolutePath().endsWith("\\Contents\\Resources\\Java\\StarMade-Launcher.jar")) {
+					File contentsDir = jarFile.getParentFile().getParentFile();
+					File appDir = contentsDir.getParentFile();
+					File parentOfApp = appDir.getParentFile();
+					System.setProperty("user.dir", parentOfApp.getAbsolutePath());
+				}
+			} catch(URISyntaxException exception) {
+				exception.printStackTrace();
+			}
+		}
+
 		// Read launch settings
 		LaunchSettings.readSettings();
 		LogManager.initialize();
@@ -112,9 +130,6 @@ public class StarMadeLauncher extends JFrame {
 		setBranch(gameVersion.branch());
 
 		LaunchSettings.saveSettings();
-
-		// Get the current OS
-		currentOS = OperatingSystem.getCurrent();
 
 		// Create launcher UI
 		createMainPanel();

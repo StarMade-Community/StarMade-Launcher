@@ -14,7 +14,7 @@ public enum OperatingSystem {
 
 	LINUX(new String[]{"linux", "unix"}, "tar.gz", "jre%d/bin/java"),
 	SOLARIS(new String[]{"sunos", "solaris"}, "tar.gz", "jre%d/bin/java"),
-	MAC(new String[]{"mac"}, "tar.gz", "jre%d/Contents/Home/bin/java"),
+	MAC(new String[]{"mac"}, "tar.gz", "StarMade-Launcher.app/Contents/Resources/jre%d/Contents/Home/bin/java"),
 	WINDOWS(new String[]{"win"}, "zip", "jre%d/bin/java.exe"),
 	UNKNOWN(new String[0], null, null);
 

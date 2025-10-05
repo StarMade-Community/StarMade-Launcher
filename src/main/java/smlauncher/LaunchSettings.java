@@ -2,7 +2,6 @@ package smlauncher;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
-import smlauncher.util.OperatingSystem;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +18,7 @@ public final class LaunchSettings {
 	// Settings File Methods
 
 	public static void readSettings() {
-		File jsonFile = new File(getSettingsFilePath());
+		File jsonFile = new File("launch-settings.json");
 		JSONObject defaultSettings = getDefaultLaunchSettings();
 
 		// Create file if not present
@@ -40,7 +39,7 @@ public final class LaunchSettings {
 	}
 
 	public static void saveSettings() {
-		File settingsFile = new File(getSettingsFilePath());
+		File settingsFile = new File("launch-settings.json");
 		try {
 			settingsFile.createNewFile();
 			FileUtils.write(settingsFile, launchSettings.toString(4), "UTF-8");
@@ -51,22 +50,7 @@ public final class LaunchSettings {
 
 	private static JSONObject getDefaultLaunchSettings() {
 		JSONObject settings = new JSONObject();
-		String installDir;
-		try {
-			String cwd = new File(".").getAbsolutePath();
-			if (OperatingSystem.getCurrent().equals(OperatingSystem.MAC) && (cwd.endsWith("/Contents/Resources") || cwd.endsWith("\\Contents\\Resources"))) {
-				// Running inside a .app bundle on macOS, set installDir to parent of .app
-				File resourcesDir = new File(cwd);
-				File contentsDir = resourcesDir.getParentFile();
-				File appDir = contentsDir.getParentFile();
-				File parentOfApp = appDir.getParentFile();
-				installDir = parentOfApp.getAbsolutePath();
-			} else {
-				installDir = cwd;
-			}
-		} catch (Exception e) {
-			installDir = new File("StarMade").getAbsolutePath();
-		}
+		String installDir = new File("StarMade").getAbsolutePath();
 		settings.put("installDir", installDir);
 		settings.put("jvm_args", "");
 		settings.put("lastUsedBranch", 0); // Release
@@ -74,19 +58,6 @@ public final class LaunchSettings {
 		settings.put("launchArgs", "");
 		settings.put("memory", 8192);
 		return settings;
-	}
-
-	private static String getSettingsFilePath() {
-		String cwd = new File(".").getAbsolutePath();
-		if (OperatingSystem.getCurrent().equals(OperatingSystem.MAC) && (cwd.endsWith("/Contents/Resources") || cwd.endsWith("\\Contents\\Resources"))) {
-			File resourcesDir = new File(cwd);
-			File contentsDir = resourcesDir.getParentFile();
-			File appDir = contentsDir.getParentFile();
-			File parentOfApp = appDir.getParentFile();
-			return new File(parentOfApp, "launch-settings.json").getAbsolutePath();
-		} else {
-			return new File("launch-settings.json").getAbsolutePath();
-		}
 	}
 
 	// Settings Getters and Setters
