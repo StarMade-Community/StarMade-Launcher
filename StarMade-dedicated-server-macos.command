@@ -44,7 +44,7 @@ if [ ! -f "StarMade-Launcher.jar" ]; then
 fi
 
 # Check if Java 8 exists
-JAVA8_PATH="$SCRIPT_DIR/jre8/bin/java"
+JAVA8_PATH="$SCRIPT_DIR/jre8/Contents/Home/bin/java"
 if [ ! -f "$JAVA8_PATH" ]; then
     write_log "Java 8 runtime not found at $JAVA8_PATH"
     write_log "Please run the StarMade Launcher first to install the required Java runtime."
@@ -53,7 +53,7 @@ if [ ! -f "$JAVA8_PATH" ]; then
 fi
 
 # Check if Java 23 exists
-JAVA23_PATH="$SCRIPT_DIR/jre23/bin/java"
+JAVA23_PATH="$SCRIPT_DIR/jre23/Contents/Home/bin/java"
 if [ ! -f "$JAVA23_PATH" ]; then
     write_log "Java 23 runtime not found at $JAVA23_PATH"
     write_log "Please run the StarMade Launcher first to install the required Java runtime."

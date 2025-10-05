@@ -55,14 +55,14 @@
 
 // Java executable paths for each platform
 #ifdef _WIN32
-    #define JAVA8_RELATIVE_PATH "\\jre8\\bin\\java.exe"
-    #define JAVA23_RELATIVE_PATH "\\jre23\\bin\\java.exe"
+    #define JAVA8_RELATIVE_PATH "jre8\\bin\\java.exe"
+    #define JAVA23_RELATIVE_PATH "jre23\\bin\\java.exe"
 #elif defined(__APPLE__)
-    #define JAVA8_RELATIVE_PATH "/jre8/Contents/Home/bin/java"
-    #define JAVA23_RELATIVE_PATH "/jre23/Contents/Home/bin/java"
+    #define JAVA8_RELATIVE_PATH "jre8/Contents/Home/bin/java"
+    #define JAVA23_RELATIVE_PATH "jre23/Contents/Home/bin/java"
 #else
-	#define JAVA8_RELATIVE_PATH "/jre8/bin/java"
-	#define JAVA23_RELATIVE_PATH "/jre23/bin/java"
+	#define JAVA8_RELATIVE_PATH "jre8/bin/java"
+	#define JAVA23_RELATIVE_PATH "jre23/bin/java"
 #endif
 
 // Function declarations
