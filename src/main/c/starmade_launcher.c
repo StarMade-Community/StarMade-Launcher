@@ -377,19 +377,25 @@ void show_error_message(const char *message) {
     #ifdef _WIN32
         MessageBoxA(NULL, message, "StarMade Launcher Error", MB_ICONERROR | MB_OK);
     #elif defined(__APPLE__)
-        // Create an AppleScript command to display a dialog
-        size_t required_size = strlen(message) + 150; // 150 for the AppleScript command and null terminator
-        if (required_size > MAX_CMD_LENGTH + 100) {
-            fprintf(stderr, "Error message too long\n");
-            fprintf(stderr, "ERROR: %s\n", message);
-            return;
+        // Escape double quotes and newlines for AppleScript
+        char escaped_msg[MAX_CMD_LENGTH + 100];
+        int j = 0;
+        for (int i = 0; message[i] != '\0' && j < MAX_CMD_LENGTH; ++i) {
+            if (message[i] == '"') {
+                escaped_msg[j++] = '\\';
+                escaped_msg[j++] = '"';
+            } else if (message[i] == '\n' || message[i] == '\r') {
+                escaped_msg[j++] = ' ';
+            } else {
+                escaped_msg[j++] = message[i];
+            }
         }
-
+        escaped_msg[j] = '\0';
         char cmd[MAX_CMD_LENGTH + 100];
         snprintf(cmd, sizeof(cmd),
                 "osascript -e 'display dialog \"%s\" buttons {\"OK\"} "
                 "default button \"OK\" with icon stop with title \"StarMade Launcher Error\"'",
-                message);
+                escaped_msg);
         system(cmd);
     #else
         // Try graphical tools first, fallback to console
