@@ -224,6 +224,14 @@ jobs:
                     cp StarMade-dedicated-server-macos.command native-packages/macos-metal/
                     chmod +x native-packages/macos-metal/StarMade-dedicated-server-macos.command
 
+            -   name: Move jre8 to app bundle
+                run: |
+                  mv native-packages/macos-metal/jre8 native-packages/macos-metal/StarMade-Launcher.app/Contents/Resources/jre8
+
+            -   name: Move jre23 to app bundle
+                run: |
+                  mv native-packages/macos-metal/jre23 native-packages/macos-metal/StarMade-Launcher.app/Contents/Resources/jre23
+
             -   name: Codesign application
                 run: |
                   codesign --force --deep --sign - "native-packages/macos-metal/StarMade-Launcher.app"
@@ -231,7 +239,7 @@ jobs:
             -   name: Create ZIP archive
                 run: |
                     cd native-packages/macos-metal
-                    zip -r ../StarMade-Launcher-MacOS-Metal.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command jre8 jre23
+                    zip -r ../StarMade-Launcher-MacOS-Metal.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command
             
             -   name: Upload MacOS Metal package
                 uses: actions/upload-artifact@v4
@@ -313,13 +321,19 @@ jobs:
                 run: |
                     cp StarMade-dedicated-server-macos.command native-packages/macos-intel/
                     chmod +x native-packages/macos-intel/StarMade-dedicated-server-macos.command
+            -   name: Move jre8 to app bundle
+                run: |
+                  mv native-packages/macos-intel/jre8 native-packages/macos-intel/StarMade-Launcher.app/Contents/Resources/jre8
+            -   name: Move jre23 to app bundle
+                run: |
+                  mv native-packages/macos-intel/jre23 native-packages/macos-intel/StarMade-Launcher.app/Contents/Resources/jre23
             -   name: Codesign application
                 run: |
                   codesign --force --deep --sign - "native-packages/macos-intel/StarMade-Launcher.app"
             -   name: Create ZIP archive
                 run: |
                     cd native-packages/macos-intel
-                    zip -r ../StarMade-Launcher-MacOS-Intel.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command jre8 jre23
+                    zip -r ../StarMade-Launcher-MacOS-Intel.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command
             -   name: Upload MacOS Intel package
                 uses: actions/upload-artifact@v4
                 with:
