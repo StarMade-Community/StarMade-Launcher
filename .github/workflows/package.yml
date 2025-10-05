@@ -219,11 +219,6 @@ jobs:
                 run: |
                     cp src/main/resources/starmade.icns "native-packages/macos-metal/StarMade-Launcher.app/Contents/Resources/AppIcon.icns"
 
-            -   name: Copy client script
-                run: |
-                  cp StarMade-Launcher.command native-packages/macos-metal/
-                  chmod +x native-packages/macos-metal/StarMade-Launcher.command
-
             -   name: Copy server script
                 run: |
                     cp StarMade-dedicated-server-macos.command native-packages/macos-metal/
@@ -236,7 +231,7 @@ jobs:
             -   name: Create ZIP archive
                 run: |
                     cd native-packages/macos-metal
-                    zip -r ../StarMade-Launcher-MacOS-Metal.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command StarMade-Launcher.command jre8 jre23
+                    zip -r ../StarMade-Launcher-MacOS-Metal.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command jre8 jre23
             
             -   name: Upload MacOS Metal package
                 uses: actions/upload-artifact@v4
@@ -314,10 +309,6 @@ jobs:
             -   name: Convert icon
                 run: |
                     cp src/main/resources/starmade.icns "native-packages/macos-intel/StarMade-Launcher.app/Contents/Resources/AppIcon.icns"
-            -   name: Copy client script
-                run: |
-                  cp StarMade-Launcher.command native-packages/macos-intel/
-                  chmod +x native-packages/macos-intel/StarMade-Launcher.command
             -   name: Copy server script
                 run: |
                     cp StarMade-dedicated-server-macos.command native-packages/macos-intel/
@@ -328,7 +319,7 @@ jobs:
             -   name: Create ZIP archive
                 run: |
                     cd native-packages/macos-intel
-                    zip -r ../StarMade-Launcher-MacOS-Intel.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command StarMade-Launcher.command jre8 jre23
+                    zip -r ../StarMade-Launcher-MacOS-Intel.zip StarMade-Launcher.app StarMade-dedicated-server-macos.command jre8 jre23
             -   name: Upload MacOS Intel package
                 uses: actions/upload-artifact@v4
                 with:
