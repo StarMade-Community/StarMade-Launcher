@@ -68,7 +68,7 @@ int file_exists(const char *path);
 void get_executable_path(char *buffer, size_t buffer_size);
 int build_command_line(char *cmd_line, size_t cmd_line_size, const char *java_path,
                       const char *jar_path, int argc, char *argv[]);
-int launch_process(const char *cmd_line, const char *working_dir);
+int launch_process(const char *cmd_line, const char *working_dir, const char *java_to_use, const char *launcher_jar);
 void show_error_message(const char *message);
 
 int main(int argc, char *argv[]) {
@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Launch process
-    if (!launch_process(cmd_line, exe_path)) {
+    if (!launch_process(cmd_line, exe_path, java_to_use, launcher_jar)) {
         char error_msg[MAX_CMD_LENGTH + 100];
         snprintf(error_msg, sizeof(error_msg),
                 "Failed to start StarMade Launcher.\nCommand line: %s", cmd_line);
@@ -286,7 +286,7 @@ int build_command_line(char *cmd_line, size_t cmd_line_size, const char *java_pa
 }
 
 // Function to launch the process
-int launch_process(const char *cmd_line, const char *working_dir) {
+int launch_process(const char *cmd_line, const char *working_dir, const char *java_to_use, const char *launcher_jar) {
     #ifdef _WIN32
         STARTUPINFOA si;
         PROCESS_INFORMATION pi;
