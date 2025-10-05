@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
         char error_msg[MAX_PATH_LENGTH * 2];
         snprintf(error_msg, sizeof(error_msg),
                 "Could not find a Java runtime at any of the following locations:\n"
-                "%s\n%s\n"
+                "%s\n\n%s\n"
                 "Please make sure you have extracted all files correctly.",
                 java8_path, java23_path);
         show_error_message(error_msg);
@@ -318,6 +318,38 @@ int launch_process(const char *cmd_line, const char *working_dir) {
         CloseHandle(pi.hThread);
 
         return 1;
+    #elif defined(__APPLE__)
+        // Use posix_spawn to launch Java as a GUI process
+        #include <spawn.h>
+        extern char **environ;
+
+        // Tokenize cmd_line into argv
+        char *cmd_copy = strdup(cmd_line);
+        if (!cmd_copy) return 0;
+        int argc = 0;
+        char *token = strtok(cmd_copy, " ");
+        char *argv[64]; // Up to 64 args
+        while (token && argc < 63) {
+            argv[argc++] = token;
+            token = strtok(NULL, " ");
+        }
+        argv[argc] = NULL;
+
+        // Set working directory
+        if (chdir(working_dir) != 0) {
+            free(cmd_copy);
+            return 0;
+        }
+
+        pid_t pid;
+        int status = posix_spawn(&pid, argv[0], NULL, NULL, argv, environ);
+        free(cmd_copy);
+        if (status == 0) {
+            // Optionally, detach and let the launcher exit
+            return 1;
+        } else {
+            return 0;
+        }
     #else
         // Unix implementation
         size_t required_size = strlen(working_dir) + strlen(cmd_line) + 10; // 10 for "cd "" && " and null terminator
