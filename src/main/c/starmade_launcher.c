@@ -325,15 +325,25 @@ int launch_process(const char *cmd_line, const char *working_dir) {
         #include <sys/wait.h>
         extern char **environ;
 
-        // Tokenize cmd_line into argv
+        // Robust argument splitting for quoted args
         char *cmd_copy = strdup(cmd_line);
         if (!cmd_copy) return 0;
+        char *argv[64];
         int argc = 0;
-        char *token = strtok(cmd_copy, " ");
-        char *argv[64]; // Up to 64 args
-        while (token && argc < 63) {
-            argv[argc++] = token;
-            token = strtok(NULL, " ");
+        char *p = cmd_copy;
+        while (*p && argc < 63) {
+            while (*p == ' ') p++;
+            if (!*p) break;
+            if (*p == '"') {
+                p++;
+                argv[argc++] = p;
+                while (*p && *p != '"') p++;
+                if (*p) {*p = 0; p++;}
+            } else {
+                argv[argc++] = p;
+                while (*p && *p != ' ') p++;
+                if (*p) {*p = 0; p++;}
+            }
         }
         argv[argc] = NULL;
 
@@ -345,28 +355,24 @@ int launch_process(const char *cmd_line, const char *working_dir) {
 
         pid_t pid = fork();
         if (pid < 0) {
-            // Fork failed
             free(cmd_copy);
             return 0;
         } else if (pid == 0) {
-            // Child process: redirect output to launcher.log
             FILE *log = fopen("launcher.log", "w");
             if (log) {
                 dup2(fileno(log), STDOUT_FILENO);
                 dup2(fileno(log), STDERR_FILENO);
+                fprintf(log, "[DEBUG] Args: ");
+                for (int i = 0; i < argc; i++) fprintf(log, "[%s] ", argv[i]);
+                fprintf(log, "\n[DEBUG] Working dir: %s\n", working_dir);
                 fclose(log);
             }
-            // Execute Java
             execvp(argv[0], argv);
-            // If execvp fails
             perror("execvp failed");
             exit(1);
         } else {
-            // Parent process: print debug info and wait for child to start
             printf("[DEBUG] Launched process PID: %d\n", pid);
-            int status = 0;
-            // Optionally, wait for child to finish or detach
-            sleep(1); // Give child time to start
+            sleep(1);
             free(cmd_copy);
             return 1;
         }
