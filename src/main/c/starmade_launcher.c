@@ -319,34 +319,24 @@ int launch_process(const char *cmd_line, const char *working_dir, const char *ja
 
         return 1;
     #elif defined(__APPLE__)
-        // Directly execute the Java binary with arguments
-        pid_t pid = fork();
-        if (pid == 0) {
-            // Child process
-            chdir(working_dir); // Set working directory
-            // Build argument list
-            char *const args[] = {
-                (char *)java_to_use,
-                "-XstartOnFirstThread",
-                "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
-                "-jar",
-                (char *)launcher_jar,
-                NULL
-            };
-            execv(java_to_use, args);
-            // If execv fails
-            perror("execv failed");
-            exit(1);
-        } else if (pid > 0) {
-            // Parent process
-            int status;
-            waitpid(pid, &status, 0);
-            return (status == 0);
-        } else {
-            // Fork failed
-            perror("fork failed");
+        // On macOS, use the already constructed command line to ensure correct arguments
+        size_t required_size = strlen(working_dir) + strlen(cmd_line) + 10; // for "cd "" && " and null terminator
+        if (required_size > MAX_CMD_LENGTH * 2) {
+            fprintf(stderr, "Command line too long\n");
             return 0;
         }
+
+        char *cd_command = (char *)malloc(required_size);
+        if (cd_command == NULL) {
+            fprintf(stderr, "Failed to allocate memory for command\n");
+            return 0;
+        }
+
+        // Change to working directory first, then execute command
+        snprintf(cd_command, required_size, "cd \"%s\" && %s", working_dir, cmd_line);
+        int result = system(cd_command);
+        free(cd_command);
+        return (result != -1);
     #else
         // Unix implementation
         size_t required_size = strlen(working_dir) + strlen(cmd_line) + 10; // 10 for "cd "" && " and null terminator
