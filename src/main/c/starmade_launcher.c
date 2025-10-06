@@ -319,24 +319,31 @@ int launch_process(const char *cmd_line, const char *working_dir, const char *ja
 
         return 1;
     #elif defined(__APPLE__)
-        // On macOS, use the already constructed command line to ensure correct arguments
-        size_t required_size = strlen(working_dir) + strlen(cmd_line) + 10; // for "cd "" && " and null terminator
-        if (required_size > MAX_CMD_LENGTH * 2) {
-            fprintf(stderr, "Command line too long\n");
+        // On macOS, replace current process with Java using execv so the Dock icon and UI belong to Java
+        if (chdir(working_dir) != 0) {
+            perror("chdir failed");
             return 0;
         }
 
-        char *cd_command = (char *)malloc(required_size);
-        if (cd_command == NULL) {
-            fprintf(stderr, "Failed to allocate memory for command\n");
-            return 0;
+        // Count extra args (argv[1..]) from original invocation present in cmd_line caller; we rebuild from argc/argv not available here.
+        // We cannot access original argc/argv here, so we will not forward them in this path.
+        // Build the fixed arguments: java, -XstartOnFirstThread, optional --add-opens, -jar, launcher_jar
+        const int MAX_ARGS = 8; // java + 5 args max + NULL
+        char *args[MAX_ARGS];
+        int idx = 0;
+        args[idx++] = (char *)java_to_use;
+        args[idx++] = "-XstartOnFirstThread";
+        if (strstr(java_to_use, "23") != NULL) {
+            args[idx++] = "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED";
         }
+        args[idx++] = "-jar";
+        args[idx++] = (char *)launcher_jar;
+        args[idx] = NULL;
 
-        // Change to working directory first, then execute command
-        snprintf(cd_command, required_size, "cd \"%s\" && %s", working_dir, cmd_line);
-        int result = system(cd_command);
-        free(cd_command);
-        return (result != -1);
+        execv(java_to_use, args);
+        // If execv returns, it failed
+        perror("execv failed");
+        return 0;
     #else
         // Unix implementation
         size_t required_size = strlen(working_dir) + strlen(cmd_line) + 10; // 10 for "cd "" && " and null terminator
