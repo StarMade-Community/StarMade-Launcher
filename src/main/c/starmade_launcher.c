@@ -287,7 +287,7 @@ int build_command_line(char *cmd_line, size_t cmd_line_size, const char *java_pa
 
 // Function to launch the process
 int launch_process(const char *cmd_line, const char *working_dir, const char *java_to_use, const char *launcher_jar) {
-    #ifdef _WIN32
+#ifdef _WIN32
         STARTUPINFOA si;
         PROCESS_INFORMATION pi;
 
@@ -319,13 +319,34 @@ int launch_process(const char *cmd_line, const char *working_dir, const char *ja
 
         return 1;
     #elif defined(__APPLE__)
-        // Use 'open' to launch Java as a GUI app for the JAR
-        char open_cmd[MAX_CMD_LENGTH * 2];
-        snprintf(open_cmd, sizeof(open_cmd),
-            "open -n -a \"%s\" --args -XstartOnFirstThread --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED -jar \"%s\"",
-            java_to_use, launcher_jar);
-        int result = system(open_cmd);
-        return (result == 0);
+        // Directly execute the Java binary with arguments
+        pid_t pid = fork();
+        if (pid == 0) {
+            // Child process
+            chdir(working_dir); // Set working directory
+            // Build argument list
+            char *const args[] = {
+                (char *)java_to_use,
+                "-XstartOnFirstThread",
+                "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
+                "-jar",
+                (char *)launcher_jar,
+                NULL
+            };
+            execv(java_to_use, args);
+            // If execv fails
+            perror("execv failed");
+            exit(1);
+        } else if (pid > 0) {
+            // Parent process
+            int status;
+            waitpid(pid, &status, 0);
+            return (status == 0);
+        } else {
+            // Fork failed
+            perror("fork failed");
+            return 0;
+        }
     #else
         // Unix implementation
         size_t required_size = strlen(working_dir) + strlen(cmd_line) + 10; // 10 for "cd "" && " and null terminator
