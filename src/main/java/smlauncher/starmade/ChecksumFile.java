@@ -29,7 +29,7 @@ public class ChecksumFile {
 
 		while((line = in.readLine()) != null) {
 
-			//			./data/audio-resource/Gameplay/0022_gameplay - cockpit warning beep.ogg 14722 90b34870b3e9df9c5892d23f94f9df710716685a
+			//			./data/audio-resource/Gameplay/0022_gameplay - cockpit warning beep.ogg 14722 90b34870b3e9df9c5892d25f94f9df710716685a
 
 			line = line.trim();
 			int hashIndex = line.lastIndexOf(' ');

@@ -45,9 +45,9 @@ import java.util.Objects;
  */
 public class StarMadeLauncher extends JFrame {
 
-	public static final String LAUNCHER_VERSION = "3.3.16";
+	public static final String LAUNCHER_VERSION = "3.4.0";
 	public static final String BUG_REPORT_URL = "https://github.com/StarMade-Community/StarMade-Launcher/issues";
-	private static final String J23ARGS = "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED";
+	private static final String J25ARGS = "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED";
 	private static IndexFileEntry gameVersion;
 	private static GameBranch lastUsedBranch = GameBranch.RELEASE;
 	private static boolean debugMode;
@@ -437,7 +437,7 @@ public class StarMadeLauncher extends JFrame {
 		if(gameVersion.version().startsWith("0.2") || gameVersion.version().startsWith("0.1")) {
 			return (new File(String.format(currentOS.javaPath, 8))).getAbsolutePath();
 		} else {
-			return (new File(String.format(currentOS.javaPath, 23))).getAbsolutePath();
+			return (new File(String.format(currentOS.javaPath, 25))).getAbsolutePath();
 		}
 	}
 
@@ -445,7 +445,7 @@ public class StarMadeLauncher extends JFrame {
 		if(gameVersion.version().startsWith("0.2") || gameVersion.version().startsWith("0.1")) {
 			return JavaVersion.JAVA_8;
 		} else {
-			return JavaVersion.JAVA_23;
+			return JavaVersion.JAVA_25;
 		}
 	}
 
@@ -471,7 +471,7 @@ public class StarMadeLauncher extends JFrame {
 		ArrayList<String> commandComponents = new ArrayList<>();
 		commandComponents.add(getJavaPath());
 		if(!gameVersion.version().startsWith("0.2") && !gameVersion.version().startsWith("0.1")) {
-			commandComponents.add(J23ARGS);
+			commandComponents.add(J25ARGS);
 		}
 
 		if(currentOS == OperatingSystem.MAC) {

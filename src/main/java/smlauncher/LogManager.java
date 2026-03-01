@@ -169,7 +169,7 @@ public class LogManager {
 			writer.append("\tJVM Arguments: ").append(LaunchSettings.getJvmArgs()).append("\n");
 			writer.append("\tStarMade.jar Exists: ").append(String.valueOf(new File(LaunchSettings.getInstallDir() + "/StarMade.jar").exists())).append("\n\n");
 			writer.append("\tJava 8 Folder Exists: ").append(String.valueOf(new File("jre8").exists())).append("\n");
-			writer.append("\tJava 23 Folder Exists: ").append(String.valueOf(new File("jre23").exists())).append("\n");
+			writer.append("\tJava 25 Folder Exists: ").append(String.valueOf(new File("jre25").exists())).append("\n");
 			writer.append("\tData Folder Exists: ").append(String.valueOf(new File(LaunchSettings.getInstallDir() + "/data").exists())).append("\n\n");
 
 			writer.append("Error Details:\n");

@@ -54,13 +54,13 @@
 // Java executable paths for each platform
 #ifdef _WIN32
     #define JAVA8_RELATIVE_PATH "\\jre8\\bin\\java.exe"
-    #define JAVA23_RELATIVE_PATH "\\jre23\\bin\\java.exe"
+    #define JAVA25_RELATIVE_PATH "\\jre25\\bin\\java.exe"
 #elif defined(__APPLE__)
     #define JAVA8_RELATIVE_PATH "/jre8/Contents/Home/bin/java"
-    #define JAVA23_RELATIVE_PATH "/jre23/Contents/Home/bin/java"
+    #define JAVA25_RELATIVE_PATH "/jre25/Contents/Home/bin/java"
 #else
 	#define JAVA8_RELATIVE_PATH "/jre8/bin/java"
-	#define JAVA23_RELATIVE_PATH "/jre23/bin/java"
+	#define JAVA25_RELATIVE_PATH "/jre25/bin/java"
 #endif
 
 // Function declarations
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
     char exe_path[MAX_PATH_LENGTH] = {0};
     char launcher_jar[MAX_PATH_LENGTH] = {0};
     char java8_path[MAX_PATH_LENGTH] = {0};
-    char java23_path[MAX_PATH_LENGTH] = {0};
+    char java25_path[MAX_PATH_LENGTH] = {0};
     char cmd_line[MAX_CMD_LENGTH] = {0};
     char *java_to_use = NULL;
 
@@ -86,11 +86,11 @@ int main(int argc, char *argv[]) {
     #ifdef _WIN32
         snprintf(launcher_jar, sizeof(launcher_jar), "%s\\%s", exe_path, LAUNCHER_JAR);
         snprintf(java8_path, sizeof(java8_path), "%s%s", exe_path, JAVA8_RELATIVE_PATH);
-        snprintf(java23_path, sizeof(java23_path), "%s%s", exe_path, JAVA23_RELATIVE_PATH);
+        snprintf(java25_path, sizeof(java25_path), "%s%s", exe_path, JAVA25_RELATIVE_PATH);
     #else
         snprintf(launcher_jar, sizeof(launcher_jar), "%s/%s", exe_path, LAUNCHER_JAR);
         snprintf(java8_path, sizeof(java8_path), "%s%s", exe_path, JAVA8_RELATIVE_PATH);
-        snprintf(java23_path, sizeof(java23_path), "%s%s", exe_path, JAVA23_RELATIVE_PATH);
+        snprintf(java25_path, sizeof(java25_path), "%s%s", exe_path, JAVA25_RELATIVE_PATH);
     #endif
 
     // Check if JAR exists
@@ -104,9 +104,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Check Java runtimes - prefer Java 23
-    if (file_exists(java23_path)) {
-        java_to_use = java23_path;
+    // Check Java runtimes - prefer Java 25
+    if (file_exists(java25_path)) {
+        java_to_use = java25_path;
     } else if (file_exists(java8_path)) {
         java_to_use = java8_path;
     } else {
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
                 "Could not find a Java runtime at any of the following locations:\n"
                 "%s\n\n%s\n"
                 "Please make sure you have extracted all files correctly.",
-                java8_path, java23_path);
+                java8_path, java25_path);
         show_error_message(error_msg);
         return 1;
     }
@@ -251,8 +251,8 @@ int build_command_line(char *cmd_line, size_t cmd_line_size, const char *java_pa
         offset += result;
     #endif
 
-    // Check if it's Java 23 (simple check for "23" in the path)
-    if (strstr(java_path, "23") != NULL) {
+    // Check if it's Java 25 (simple check for "25" in the path)
+    if (strstr(java_path, "25") != NULL) {
         result = snprintf(cmd_line + offset, cmd_line_size - offset,
                          "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED ");
         if (result < 0 || (size_t)result >= cmd_line_size - offset) {
@@ -333,7 +333,7 @@ int launch_process(const char *cmd_line, const char *working_dir, const char *ja
         int idx = 0;
         args[idx++] = (char *)java_to_use;
         args[idx++] = "-XstartOnFirstThread";
-        if (strstr(java_to_use, "23") != NULL) {
+        if (strstr(java_to_use, "25") != NULL) {
             args[idx++] = "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED";
         }
         args[idx++] = "-jar";
